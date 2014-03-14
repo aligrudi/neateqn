@@ -251,7 +251,7 @@ static int char_type(char *s)
 		return T_RIGHT;
 	if (c == '~' || c == '^')
 		return T_GAP;
-	if (ispunct(c))
+	if (ispunct(c) && (c != '\\' || !s[1]))
 		return T_ORD;
 	return T_LETTER;
 }
