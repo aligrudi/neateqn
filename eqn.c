@@ -188,9 +188,9 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			box_move(box, dy, dx);
 		box_putf(box, "\\s%s", escarg(nreg(sz)));
 		do {
-			box_puttext(box, tok_type() | FN2(tok_font(tok_type(), fn)),
-					"\\f%s%s", escarg(tok_font(tok_type(), fn)),
-					tok_improve(tok_get()));
+			char *cfn = tok_font(tok_type(), fn);
+			box_puttext(box, tok_type() | FN2(cfn), "\\f%s%s",
+					escarg(cfn), tok_improve(tok_get()));
 			tok_pop();
 		} while (!tok_sep());
 		if (dx || dy)
