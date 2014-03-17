@@ -121,7 +121,7 @@ static void box_afterput(struct box *box, int type)
 	if (T_TOK(type) != T_GAP) {
 		box->tcur = T_FONT(type) | box_fixatom(T_ATOM(type), box->tcur);
 		if (!box->tbeg)
-			box->tbeg = type;
+			box->tbeg = box->tcur;
 	}
 }
 
@@ -639,12 +639,15 @@ void box_vcenter(struct box *box, struct box *sub)
 	int ht = nregmk();
 	int dp = nregmk();
 	int fall = nregmk();
+	box_italiccorrection(box);
+	box_beforeput(box, sub->tbeg);
 	tok_dim(box_toreg(sub), wd, ht, dp);
 	printf(".nr %s 0%s+%s/2-%s-(%sp*30u/100u)\n", nregname(fall),
 		nreg(ht), nreg(dp), nreg(dp), nreg(box->szreg));
 	box_putf(box, "\\v'%su'%s\\v'-%su'",
 		nreg(fall), box_toreg(sub), nreg(fall));
 	box_toreg(box);
+	box_afterput(box, sub->tcur);
 	nregrm(wd);
 	nregrm(ht);
 	nregrm(dp);
