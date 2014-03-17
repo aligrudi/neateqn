@@ -27,14 +27,17 @@ static int eqn_lineupreg;	/* the number register holding lineup width */
 static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0);
 
 /* read equations until delim is read */
-static void eqn_boxuntil(struct box *box, int sz0, char *fn0, char *delim)
+static int eqn_boxuntil(struct box *box, int sz0, char *fn0, char *delim)
 {
 	struct box *sub = NULL;
 	while (tok_get() && tok_jmp(delim)) {
+		if (!strcmp("}", tok_get()))
+			return 1;
 		sub = eqn_box(0, sub ? box : NULL, sz0, fn0);
 		box_merge(box, sub);
 		box_free(sub);
 	}
+	return 0;
 }
 
 /* update sz0 by sz1 and write it into sz */
@@ -125,6 +128,30 @@ static char *tok_font(int tok, char *fn)
 	return grfont;
 }
 
+static void tok_expect(char *s)
+{
+	if (tok_jmp(s)) {
+		fprintf(stderr, "neateqn: expected %s bot got %s\n",
+			s, tok_get());
+		exit(1);
+	}
+}
+
+static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
+{
+	struct box *pile[NPILES];
+	int i;
+	int n = 0;
+	tok_expect("{");
+	do {
+		pile[n++] = box_alloc(sz0, 0);
+	} while (!eqn_boxuntil(pile[n - 1], sz0, fn0, "above"));
+	tok_expect("}");
+	box_pile(box, pile, n, adj);
+	for (i = 0; i < n; i++)
+		box_free(pile[i]);
+}
+
 /* read a box without fractions */
 static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 {
@@ -170,6 +197,12 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		sqrt = eqn_left(0, NULL, sz, fn);
 		box_sqrt(box, sqrt);
 		box_free(sqrt);
+	} else if (!tok_jmp("pile") || !tok_jmp("cpile")) {
+		eqn_pile(box, sz, fn, 'c');
+	} else if (!tok_jmp("lpile")) {
+		eqn_pile(box, sz, fn, 'l');
+	} else if (!tok_jmp("rpile")) {
+		eqn_pile(box, sz, fn, 'r');
 	} else if (!tok_jmp("vcenter")) {
 		inner = eqn_left(flg, pre, sz, fn);
 		box_vcenter(box, inner);
@@ -182,7 +215,8 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		eqn_boxuntil(inner, sz, fn, "right");
 		snprintf(right, sizeof(right), "%s", tok_improve(tok_poptext()));
 		printf(".ft %s\n", grfont);
-		box_wrap(box, inner, left[0] ? left : NULL, right[0] ? right : NULL);
+		box_wrap(box, inner, left[0] ? left : NULL,
+				right[0] ? right : NULL);
 	} else {
 		if (dx || dy)
 			box_move(box, dy, dx);

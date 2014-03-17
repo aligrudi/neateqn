@@ -679,3 +679,60 @@ void box_width(struct box *box, int reg)
 {
 	printf(".nr %s 0\\w'%s'\n", nregname(reg), box_toreg(box));
 }
+
+void box_pile(struct box *box, struct box **pile, int n, int adj)
+{
+	int plen[NPILES][4];
+	int max_wd = nregmk();
+	int max_ht = nregmk();
+	int i;
+	for (i = 0; i < n; i++)
+		box_italiccorrection(pile[i]);
+	for (i = 0; i < n; i++)
+		blen_mk(box_toreg(pile[i]), plen[i]);
+	box_italiccorrection(box);
+	box_beforeput(box, T_INNER | T_FNX);
+	printf(".nr %s 0%s\n", nregname(max_wd), nreg(plen[0][0]));
+	printf(".nr %s 0\n", nregname(max_ht));
+	for (i = 1; i < n; i++) {
+		printf(".if %s>%s .nr %s 0+%s\n",
+			nreg(plen[i][0]), nreg(max_wd),
+			nregname(max_wd), nreg(plen[i][0]));
+	}
+	for (i = 1; i < n; i++) {
+		printf(".if %s+%s>%s .nr %s 0+%s+%s\n",
+			nreg(plen[i - 1][3]), nreg(plen[i][2]), nreg(max_ht),
+			nregname(max_ht), nreg(plen[i - 1][3]), nreg(plen[i][2]));
+	}
+	/* inserting spaces between entries */
+	printf(".nr %s +(%sp*50u/100u)\n", nregname(max_ht), nreg(box->szreg));
+	/* moving down */
+	box_putf(box, "\\v'-%du*%su/2u'", n - 1, nreg(max_ht));
+	/* adding the entries */
+	for (i = 0; i < n; i++) {
+		if (adj == 'c')
+			box_putf(box, "\\h'%su-%su/2u'",
+				nreg(max_wd), nreg(plen[i][0]));
+		if (adj == 'r')
+			box_putf(box, "\\h'%su-%su'",
+				nreg(max_wd), nreg(plen[i][0]));
+		box_putf(box, "\\v'%su'%s", i ? nreg(max_ht) : "0",
+			box_toreg(pile[i]));
+		if (adj == 'l')
+			box_putf(box, "\\h'-%su'", nreg(plen[i][0]));
+		if (adj == 'c')
+			box_putf(box, "\\h'-%su+(%su-%su/2u)'",
+				nreg(max_wd), nreg(max_wd), nreg(plen[i][0]));
+		if (adj == 'r')
+			box_putf(box, "\\h'-%su'", nreg(max_wd));
+	}
+	/* moving up and right */
+	box_putf(box, "\\v'-%du*%su/2u'\\h'%su'",
+		n - 1, nreg(max_ht), nreg(max_wd));
+	box_afterput(box, T_INNER | T_FNX);
+	box_toreg(box);
+	for (i = 0; i < n; i++)
+		blen_rm(plen[i]);
+	nregrm(max_wd);
+	nregrm(max_ht);
+}
