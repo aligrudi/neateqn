@@ -21,6 +21,7 @@
 static char gfont[FNLEN] = "2";
 static char grfont[FNLEN] = "1";
 static char gbfont[FNLEN] = "3";
+static char gsize[FNLEN] = "\\n[" EQNSZ "]";
 static char eqn_lineup[128];	/* the lineup horizontal request */
 static int eqn_lineupreg;	/* the number register holding lineup width */
 
@@ -82,6 +83,7 @@ static char *tok_improve(char *s)
 
 static int eqn_commands(struct box *box, int szreg)
 {
+	char *sz;
 	if (!tok_jmp("delim")) {
 		tok_delim();
 		return 0;
@@ -114,6 +116,14 @@ static int eqn_commands(struct box *box, int szreg)
 	}
 	if (!tok_jmp("gbfont")) {
 		strcpy(gbfont, tok_removequotes(tok_poptext()));
+		return 0;
+	}
+	if (!tok_jmp("gsize")) {
+		sz = tok_removequotes(tok_poptext());
+		if (sz[0] == '-' || sz[0] == '+')
+			sprintf(gsize, "\\n%s%s", escarg(EQNSZ), sz);
+		else
+			strcpy(gsize, sz);
 		return 0;
 	}
 	return 1;
@@ -348,7 +358,7 @@ static struct box *eqn_read(void)
 {
 	struct box *box, *sub;
 	int szreg = nregmk();
-	printf(".nr %s \\n%s\n", nregname(szreg), escarg(EQNSZ));
+	printf(".nr %s %s\n", nregname(szreg), gsize);
 	box = box_alloc(szreg, 0);
 	while (tok_get()) {
 		if (!tok_jmp("mark")) {
