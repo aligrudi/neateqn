@@ -139,7 +139,7 @@ static void tok_expect(char *s)
 
 static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 {
-	struct box *pile[NPILES];
+	struct box *pile[NPILES] = {NULL};
 	int i;
 	int n = 0;
 	tok_expect("{");
@@ -147,9 +147,43 @@ static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 		pile[n++] = box_alloc(sz0, 0);
 	} while (!eqn_boxuntil(pile[n - 1], sz0, fn0, "above"));
 	tok_expect("}");
-	box_pile(box, pile, n, adj);
+	box_pile(box, pile, adj);
 	for (i = 0; i < n; i++)
 		box_free(pile[i]);
+}
+
+static void eqn_matrix(struct box *box, int sz0, char *fn0)
+{
+	struct box *cols[NPILES][NPILES] = {{NULL}};
+	int adj[NPILES];
+	int nrows;
+	int ncols = 0;
+	int i, j;
+	tok_expect("{");
+	while (1) {
+		if (!tok_jmp("col") || !tok_jmp("ccol"))
+			adj[ncols] = 'c';
+		else if (!tok_jmp("lcol"))
+			adj[ncols] = 'l';
+		else if (!tok_jmp("rcol"))
+			adj[ncols] = 'r';
+		else
+			break;
+		nrows = 0;
+		tok_expect("{");
+		do {
+			cols[ncols][nrows++] = box_alloc(sz0, 0);
+		} while (!eqn_boxuntil(cols[ncols][nrows - 1],
+				sz0, fn0, "above"));
+		tok_expect("}");
+		ncols++;
+	}
+	tok_expect("}");
+	box_matrix(box, ncols, cols, adj);
+	for (i = 0; i < ncols; i++)
+		for (j = 0; j < NPILES; j++)
+			if (cols[i][j])
+				box_free(cols[i][j]);
 }
 
 /* read a box without fractions */
@@ -203,6 +237,8 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		eqn_pile(box, sz, fn, 'l');
 	} else if (!tok_jmp("rpile")) {
 		eqn_pile(box, sz, fn, 'r');
+	} else if (!tok_jmp("matrix")) {
+		eqn_matrix(box, sz, fn);
 	} else if (!tok_jmp("vcenter")) {
 		inner = eqn_left(flg, pre, sz, fn);
 		box_vcenter(box, inner);

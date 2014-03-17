@@ -15,6 +15,7 @@ static char *kwds[] = {
 	"bar", "dot", "dotdot", "dyad", "hat", "under", "vec", "tilde",
 	"left", "right", "over", "sqrt", "sub", "sup", "from", "to", "vcenter",
 	"pile", "lpile", "cpile", "rpile", "above",
+	"matrix", "col", "ccol", "lcol", "rcol",
 	"delim", "define",
 	"gfont", "grfont", "gbfont",
 	"mark", "lineup",

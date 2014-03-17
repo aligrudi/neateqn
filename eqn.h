@@ -127,7 +127,8 @@ void box_vertspace(struct box *box);
 int box_empty(struct box *box);
 void box_width(struct box *box, int reg);
 void box_vcenter(struct box *box, struct box *sub);
-void box_pile(struct box *box, struct box **pile, int n, int adj);
+void box_pile(struct box *box, struct box **pile, int adj);
+void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES], int *adj);
 
 /* managing registers */
 char *escarg(char *arg);
