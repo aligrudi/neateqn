@@ -95,6 +95,25 @@ void sbuf_cut(struct sbuf *sbuf, int n);
 int sbuf_len(struct sbuf *sbuf);
 int sbuf_empty(struct sbuf *sbuf);
 
+/* tex styles */
+#define TS_D		0x00
+#define TS_D0		0x01
+#define TS_T		0x02
+#define TS_T0		0x03
+#define TS_S		0x10
+#define TS_S0		0x11
+#define TS_SS		0x20
+#define TS_SS0		0x21
+
+#define TS_MK(s, p)	(((s) << 4) | (p))
+#define TS_0(s)		((s) & 0x01)	/* primed variant */
+#define TS_SZ(s)	((s) >> 4)	/* character size */
+
+int ts_sup(int style);
+int ts_sub(int style);
+int ts_denom(int style);
+int ts_num(int style);
+
 /* equations */
 struct box {
 	struct sbuf raw;	/* the contents */
@@ -103,9 +122,10 @@ struct box {
 	int empty;		/* nothing has been inserted yet */
 	int tbeg, tcur;		/* type of the first and the last atoms */
 	int tgap;		/* the last item added was a T_GAP */
+	int style;		/* tex style (TS_*) */
 };
 
-struct box *box_alloc(int szreg, int at_pre);
+struct box *box_alloc(int szreg, int at_pre, int style);
 void box_free(struct box *box);
 void box_puttext(struct box *box, int type, char *s, ...);
 void box_putf(struct box *box, char *s, ...);

@@ -4,13 +4,14 @@
 #include <string.h>
 #include "eqn.h"
 
-struct box *box_alloc(int szreg, int pre)
+struct box *box_alloc(int szreg, int pre, int style)
 {
 	struct box *box = malloc(sizeof(*box));
 	memset(box, 0, sizeof(*box));
 	sbuf_init(&box->raw);
 	box->szreg = szreg;
 	box->empty = 1;
+	box->style = style;
 	if (pre)
 		box->tcur = pre;
 	return box;
@@ -72,7 +73,7 @@ static int eqn_gaps(struct box *box, int cur)
 	int s = 0;
 	int a1 = T_ATOM(box->tcur);	/* previous atom */
 	int a2 = T_ATOM(cur);		/* current atom */
-	if (a1 && a2)
+	if (!TS_SZ(box->style) && a1 && a2)
 		s = spacing[T_ATOMIDX(a1)][T_ATOMIDX(a2)];
 	if (s == 3)
 		return S_S3;

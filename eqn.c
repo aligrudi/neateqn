@@ -14,9 +14,10 @@
 #define FN2(fn)	((!(fn)[1] && ((fn)[0] == 'I' || (fn)[0] == '2')) ? T_FN2 : T_FNX)
 
 /* flags passed to eqn_box() */
-#define EQN_TOP		0x01	/* top-level boxes */
-#define EQN_SUB		0x02	/* this is a subscript */
-#define EQN_FROM	0x04	/* this is a from block */
+#define EQN_TSMASK	0x00ffff	/* style mask */
+#define EQN_TOP		0x010000	/* top-level boxes */
+#define EQN_SUB		0x020000	/* this is a subscript */
+#define EQN_FROM	0x040000	/* this is a from block */
 
 static char gfont[FNLEN] = "2";
 static char grfont[FNLEN] = "1";
@@ -34,7 +35,7 @@ static int eqn_boxuntil(struct box *box, int sz0, char *fn0, char *delim)
 	while (tok_get() && tok_jmp(delim)) {
 		if (!strcmp("}", tok_get()))
 			return 1;
-		sub = eqn_box(0, sub ? box : NULL, sz0, fn0);
+		sub = eqn_box(box->style, sub ? box : NULL, sz0, fn0);
 		box_merge(box, sub);
 		box_free(sub);
 	}
@@ -160,7 +161,7 @@ static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 	int n = 0;
 	tok_expect("{");
 	do {
-		pile[n++] = box_alloc(sz0, 0);
+		pile[n++] = box_alloc(sz0, 0, box->style);
 	} while (!eqn_boxuntil(pile[n - 1], sz0, fn0, "above"));
 	tok_expect("}");
 	box_pile(box, pile, adj);
@@ -188,7 +189,7 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 		nrows = 0;
 		tok_expect("{");
 		do {
-			cols[ncols][nrows++] = box_alloc(sz0, 0);
+			cols[ncols][nrows++] = box_alloc(sz0, 0, box->style);
 		} while (!eqn_boxuntil(cols[ncols][nrows - 1],
 				sz0, fn0, "above"));
 		tok_expect("}");
@@ -212,9 +213,10 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	char fn[FNLEN] = "";
 	int sz = sz0, newsz = 0, subsz = 0;
 	int dx = 0, dy = 0;
+	int style = EQN_TSMASK & flg;
 	if (fn0)
 		strcpy(fn, fn0);
-	box = box_alloc(sz0, pre ? pre->tcur : 0);
+	box = box_alloc(sz0, pre ? pre->tcur : 0, style);
 	while (!eqn_commands(box, sz))
 		;
 	while (1) {
@@ -244,7 +246,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	if (!tok_get())
 		return box;
 	if (!tok_jmp("sqrt")) {
-		sqrt = eqn_left(0, NULL, sz, fn);
+		sqrt = eqn_left(style, NULL, sz, fn);
 		box_sqrt(box, sqrt);
 		box_free(sqrt);
 	} else if (!tok_jmp("pile") || !tok_jmp("cpile")) {
@@ -262,7 +264,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	} else if (!tok_jmp("{")) {
 		eqn_boxuntil(box, sz, fn, "}");
 	} else if (!tok_jmp("left")) {
-		inner = box_alloc(sz, 0);
+		inner = box_alloc(sz, 0, style);
 		snprintf(left, sizeof(left), "%s", tok_improve(tok_poptext()));
 		eqn_boxuntil(inner, sz, fn, "right");
 		snprintf(right, sizeof(right), "%s", tok_improve(tok_poptext()));
@@ -312,17 +314,21 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		}
 	}
 	if (!tok_jmp("sub"))
-		sub_sub = eqn_box(EQN_SUB, NULL, sizesub(&subsz, sz0), fn0);
+		sub_sub = eqn_box(ts_sup(style) | EQN_SUB, NULL,
+				sizesub(&subsz, sz0), fn0);
 	if ((sub_sub || !(flg & EQN_SUB)) && !tok_jmp("sup"))
-		sub_sup = eqn_box(0, NULL, sizesub(&subsz, sz0), fn0);
+		sub_sup = eqn_box(ts_sub(style), NULL,
+				sizesub(&subsz, sz0), fn0);
 	if (sub_sub || sub_sup)
 		box_sub(box, sub_sub, sub_sup);
 	if (!tok_jmp("from"))
-		sub_from = eqn_box(EQN_FROM, NULL, sizesub(&subsz, sz0), fn0);
+		sub_from = eqn_box(ts_sub(style) | EQN_FROM, NULL,
+				sizesub(&subsz, sz0), fn0);
 	if ((sub_from || !(flg & EQN_FROM)) && !tok_jmp("to"))
-		sub_to = eqn_box(0, NULL, sizesub(&subsz, sz0), fn0);
+		sub_to = eqn_box(ts_sup(style), NULL,
+				sizesub(&subsz, sz0), fn0);
 	if (sub_from || sub_to) {
-		inner = box_alloc(sz0, 0);
+		inner = box_alloc(sz0, 0, style);
 		box_from(inner, box, sub_from, sub_to);
 		box_free(box);
 		box = inner;
@@ -347,11 +353,12 @@ static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0)
 {
 	struct box *box;
 	struct box *sub_num = NULL, *sub_den = NULL;
+	int style = flg & EQN_TSMASK;
 	box = eqn_left(flg, pre, sz0, fn0);
 	while (!tok_jmp("over")) {
 		sub_num = box;
-		sub_den = eqn_left(0, NULL, sz0, fn0);
-		box = box_alloc(sz0, pre ? pre->tcur : 0);
+		sub_den = eqn_left(style, NULL, sz0, fn0);
+		box = box_alloc(sz0, pre ? pre->tcur : 0, style);
 		printf(".ft %s\n", grfont);
 		box_over(box, sub_num, sub_den);
 		box_free(sub_num);
@@ -365,7 +372,7 @@ static struct box *eqn_read(void)
 	struct box *box, *sub;
 	int szreg = nregmk();
 	printf(".nr %s %s\n", nregname(szreg), gsize);
-	box = box_alloc(szreg, 0);
+	box = box_alloc(szreg, 0, TS_D);
 	while (tok_get()) {
 		if (!tok_jmp("mark")) {
 			box_putf(box, "\\k%s", escarg(EQNMK));
@@ -377,7 +384,7 @@ static struct box *eqn_read(void)
 				escarg(EQNMK), nreg(eqn_lineupreg));
 			continue;
 		}
-		sub = eqn_box(EQN_TOP, box, szreg, NULL);
+		sub = eqn_box(TS_D | EQN_TOP, box, szreg, NULL);
 		box_merge(box, sub);
 		box_free(sub);
 	}

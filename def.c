@@ -229,3 +229,39 @@ void def_set(char *name, int val)
 		if (!strcmp(gvars[i].name, name))
 			*gvars[i].ref = val;
 }
+
+/* superscript style */
+int ts_sup(int style)
+{
+	int sz = MAX(2, TS_SZ(style) + 1);
+	return TS_MK(sz, TS_0(style));
+}
+
+/* subscript style */
+int ts_sub(int style)
+{
+	int sz = MAX(2, TS_SZ(style) + 1);
+	return TS_MK(sz, 1);
+}
+
+/* numerator style */
+int ts_num(int style)
+{
+	int sz;
+	if (style == TS_D || style == TS_D0)
+		sz = TS_SZ(style);
+	else
+		sz = MAX(2, TS_SZ(style) + 1);
+	return TS_MK(sz, TS_0(style));
+}
+
+/* denominator style */
+int ts_denom(int style)
+{
+	int sz;
+	if (style == TS_D || style == TS_D0)
+		sz = TS_SZ(style);
+	else
+		sz = MAX(2, TS_SZ(style) + 1);
+	return TS_MK(sz, 1);
+}
