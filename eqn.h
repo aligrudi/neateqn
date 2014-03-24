@@ -123,6 +123,7 @@ struct box {
 	int tbeg, tcur;		/* type of the first and the last atoms */
 	int tgap;		/* the last item added was a T_GAP */
 	int style;		/* tex style (TS_*) */
+	char *tomark;		/* register for saving box width */
 };
 
 struct box *box_alloc(int szreg, int at_pre, int style);
@@ -145,7 +146,7 @@ char *box_buf(struct box *box);
 char *box_toreg(struct box *box);
 void box_vertspace(struct box *box);
 int box_empty(struct box *box);
-void box_width(struct box *box, int reg);
+void box_markpos(struct box *box, char *regname);
 void box_vcenter(struct box *box, struct box *sub);
 void box_pile(struct box *box, struct box **pile, int adj);
 void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES], int *adj);

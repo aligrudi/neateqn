@@ -112,6 +112,10 @@ static void box_beforeput(struct box *box, int type)
 					autogaps, nreg(box->szreg));
 		}
 	}
+	if (box->tomark) {
+		printf(".nr %s 0\\w'%s'\n", box->tomark, box_toreg(box));
+		box->tomark = NULL;
+	}
 }
 
 /* call after inserting a token with box_put() and box_putf()  */
@@ -691,10 +695,10 @@ void box_vertspace(struct box *box)
 	nregrm(dproom);
 }
 
-/* initialize reg to contain box's width */
-void box_width(struct box *box, int reg)
+/* put the current width to the given number register */
+void box_markpos(struct box *box, char *reg)
 {
-	printf(".nr %s 0\\w'%s'\n", nregname(reg), box_toreg(box));
+	box->tomark = reg;
 }
 
 /* initialize the length of a pile or column of a matrix */

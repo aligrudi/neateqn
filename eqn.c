@@ -377,13 +377,13 @@ static struct box *eqn_read(void)
 	while (tok_get()) {
 		if (!tok_jmp("mark")) {
 			eqn_mk = !eqn_mk ? 1 : eqn_mk;
-			box_putf(box, "\\k%s", escarg(EQNMK));
+			box_markpos(box, EQNMK);
 			continue;
 		}
 		if (!tok_jmp("lineup")) {
 			eqn_mk = 2;
-			box_width(box, eqn_lineupreg);
-			sprintf(eqn_lineup, "\\h'|\\n%su-%su'",
+			box_markpos(box, nregname(eqn_lineupreg));
+			sprintf(eqn_lineup, "\\h'\\n%su-%su'",
 				escarg(EQNMK), nreg(eqn_lineupreg));
 			continue;
 		}
