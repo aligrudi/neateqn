@@ -210,7 +210,7 @@ void tok_eqnout(char *s)
 	char post[128];
 	sprintf(post, "\\s[\\n[%s]]\\f[\\n[%s]]", EQNSZ, EQNFN);
 	if (!tok_part)
-		printf("%s%s\n", s, post);
+		printf(".ds %s \"%s%s\n\\&\\*%s\n", EQNS, s, post, escarg(EQNS));
 	else
 		printf(".as %s \"%s%s\n", EQNS, s, post);
 }

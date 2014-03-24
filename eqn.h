@@ -8,7 +8,7 @@
 /* registers used by neateqn */
 #define EQNSZ		".eqnsz"	/* register for surrounding point size */
 #define EQNFN		".eqnfn"	/* register for surrounding font */
-#define EQNS		".eqns"		/* eqn-collected line register */
+#define EQNS		"10"		/* eqn-collected line register */
 #define EQNMK		".eqnmk"	/* eqn horizontal mark */
 
 /* helpers */

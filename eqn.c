@@ -25,6 +25,7 @@ static char gbfont[FNLEN] = "3";
 static char gsize[FNLEN] = "\\n[" EQNSZ "]";
 static char eqn_lineup[128];	/* the lineup horizontal request */
 static int eqn_lineupreg;	/* the number register holding lineup width */
+static int eqn_mk;		/* the value of MK */
 
 static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0);
 
@@ -375,10 +376,12 @@ static struct box *eqn_read(void)
 	box = box_alloc(szreg, 0, TS_D);
 	while (tok_get()) {
 		if (!tok_jmp("mark")) {
+			eqn_mk = !eqn_mk ? 1 : eqn_mk;
 			box_putf(box, "\\k%s", escarg(EQNMK));
 			continue;
 		}
 		if (!tok_jmp("lineup")) {
+			eqn_mk = 2;
 			box_width(box, eqn_lineupreg);
 			sprintf(eqn_lineup, "\\h'|\\n%su-%su'",
 				escarg(EQNMK), nreg(eqn_lineupreg));
@@ -401,11 +404,14 @@ int main(void)
 	for (i = 0; def_macros[i][0]; i++)
 		in_define(def_macros[i][0], def_macros[i][1]);
 	while (!tok_eqn()) {
+		reg_reset();
+		eqn_mk = 0;
 		tok_pop();
 		printf(".nr %s \\n(.s\n", EQNSZ);
 		printf(".nr %s \\n(.f\n", EQNFN);
 		eqn_lineupreg = nregmk();
 		box = eqn_read();
+		printf(".nr MK %d\n", eqn_mk);
 		if (!box_empty(box)) {
 			sprintf(eqnblk, "%s%s", eqn_lineup, box_toreg(box));
 			tok_eqnout(eqnblk);
@@ -413,7 +419,6 @@ int main(void)
 		eqn_lineup[0] = '\0';
 		nregrm(eqn_lineupreg);
 		box_free(box);
-		reg_reset();
 	}
 	return 0;
 }
