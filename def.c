@@ -211,3 +211,21 @@ char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 	*cen = NULL;
 	return sign;
 }
+
+/* global variables */
+int e_axisheight = 23;	/* axis height */
+
+static struct gvar {
+	char *name;
+	int *ref;
+} gvars[] = {
+	{"axis_height", &e_axisheight},
+};
+
+void def_set(char *name, int val)
+{
+	int i;
+	for (i = 0; i < LEN(gvars); i++)
+		if (!strcmp(gvars[i].name, name))
+			*gvars[i].ref = val;
+}

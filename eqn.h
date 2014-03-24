@@ -141,3 +141,7 @@ char *sreg(int id);
 char *nregname(int id);
 char *sregname(int id);
 void reg_reset(void);
+
+/* eqn global variables */
+extern int e_axisheight;
+void def_set(char *name, int val);

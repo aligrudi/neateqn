@@ -83,6 +83,7 @@ static char *tok_improve(char *s)
 
 static int eqn_commands(struct box *box, int szreg)
 {
+	char var[LNLEN];
 	char *sz;
 	if (!tok_jmp("delim")) {
 		tok_delim();
@@ -124,6 +125,11 @@ static int eqn_commands(struct box *box, int szreg)
 			sprintf(gsize, "\\n%s%s", escarg(EQNSZ), sz);
 		else
 			strcpy(gsize, sz);
+		return 0;
+	}
+	if (!tok_jmp("set")) {
+		strcpy(var, tok_poptext());
+		def_set(var, atoi(tok_poptext()));
 		return 0;
 	}
 	return 1;

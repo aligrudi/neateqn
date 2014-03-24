@@ -295,57 +295,6 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 	nregrm(all_wd);
 }
 
-/* build a fraction; the correct font should be set up beforehand */
-void box_over(struct box *box, struct box *num, struct box *den)
-{
-	int num_wd = nregmk();
-	int num_dp = nregmk();
-	int den_wd = nregmk();
-	int den_ht = nregmk();
-	int all_wd = nregmk();
-	int num_rise = nregmk();
-	int den_fall = nregmk();
-
-	box_beforeput(box, T_INNER | T_FNX);
-	box_italiccorrection(num);
-	box_italiccorrection(den);
-	tok_dim(box_toreg(num), num_wd, 0, num_dp);
-	tok_dim(box_toreg(den), den_wd, den_ht, 0);
-	roff_max(all_wd, num_wd, den_wd);
-	/* making the bar longer */
-	printf(".nr %s +(%sp*40u/100u)\n", nregname(all_wd), nreg(box->szreg));
-	/* drawing the bar */
-	box_putf(box, "\\v'-%sp*30u/100u'\\f[\\n(.f]\\s[%s]\\l'%su'\\v'%sp*30u/100u'\\h'-%su/2u'",
-		nreg(box->szreg), nreg(box->szreg), nreg(all_wd),
-		nreg(box->szreg), nreg(all_wd));
-	/* output the numerator */
-	printf(".nr %s 0%s+(%sp*60u/100u)\n",
-		nregname(num_rise), nreg(num_dp), nreg(box->szreg));
-	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
-	box_putf(box, "\\v'-%su'%s\\v'%su'",
-		nreg(num_rise), box_toreg(num), nreg(num_rise));
-	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
-	/* output the denominator */
-	printf(".if %su<(%sp*7/10) .nr %s 0%sp*7/10\n",
-		nreg(den_ht), nreg(den->szreg),
-		nregname(den_ht), nreg(den->szreg));
-	printf(".nr %s 0%s+(%sp*10u/100u)\n",
-		nregname(den_fall), nreg(den_ht), nreg(box->szreg));
-	box_putf(box, "\\h'-%su/2u'", nreg(den_wd));
-	box_putf(box, "\\v'%su'%s\\v'-%su'",
-		nreg(den_fall), box_toreg(den), nreg(den_fall));
-	box_putf(box, "\\h'(-%su+%su)/2u'", nreg(den_wd), nreg(all_wd));
-	box_afterput(box, T_INNER | T_FNX);
-	box_toreg(box);
-	nregrm(num_wd);
-	nregrm(num_dp);
-	nregrm(den_wd);
-	nregrm(den_ht);
-	nregrm(all_wd);
-	nregrm(num_rise);
-	nregrm(den_fall);
-}
-
 /* return the width of s; len is the height plus depth */
 static void tok_len(char *s, int wd, int len, int ht, int dp)
 {
@@ -373,6 +322,70 @@ static void blen_rm(int len[4])
 	int i;
 	for (i = 0; i < 4; i++)
 		nregrm(len[i]);
+}
+
+/* build a fraction; the correct font should be set up beforehand */
+void box_over(struct box *box, struct box *num, struct box *den)
+{
+	int num_wd = nregmk();
+	int num_dp = nregmk();
+	int den_wd = nregmk();
+	int den_ht = nregmk();
+	int all_wd = nregmk();
+	int num_rise = nregmk();
+	int den_fall = nregmk();
+	int bar_wd = nregmk();
+	int bar_dp = nregmk();
+	int bar_ht = nregmk();
+	int bar_fall = nregmk();
+
+	box_beforeput(box, T_INNER | T_FNX);
+	box_italiccorrection(num);
+	box_italiccorrection(den);
+	tok_dim(box_toreg(num), num_wd, 0, num_dp);
+	tok_dim(box_toreg(den), den_wd, den_ht, 0);
+	roff_max(all_wd, num_wd, den_wd);
+	tok_len("\\(ru", bar_wd, 0, bar_ht, bar_dp);
+	/* calculating the vertical position of the bar */
+	printf(".nr %s 0-%s+%s/2-(%sp*%du/100u)\n",
+		nregname(bar_fall), nreg(bar_dp), nreg(bar_ht),
+		nreg(box->szreg), e_axisheight);
+	/* making the bar longer */
+	printf(".nr %s +(%sp*40u/100u)\n", nregname(all_wd), nreg(box->szreg));
+	/* drawing the bar */
+	box_putf(box, "\\v'%su'\\f[\\n(.f]\\s[%s]\\l'%su'\\v'-%su'\\h'-%su/2u'",
+		nreg(bar_fall), nreg(box->szreg), nreg(all_wd),
+		nreg(bar_fall), nreg(all_wd));
+	/* output the numerator */
+	printf(".nr %s 0%s+(%sp*60u/100u)\n",
+		nregname(num_rise), nreg(num_dp), nreg(box->szreg));
+	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
+	box_putf(box, "\\v'-%su'%s\\v'%su'",
+		nreg(num_rise), box_toreg(num), nreg(num_rise));
+	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
+	/* output the denominator */
+	printf(".if %su<(%sp*7/10) .nr %s 0%sp*7/10\n",
+		nreg(den_ht), nreg(den->szreg),
+		nregname(den_ht), nreg(den->szreg));
+	printf(".nr %s 0%s+(%sp*10u/100u)\n",
+		nregname(den_fall), nreg(den_ht), nreg(box->szreg));
+	box_putf(box, "\\h'-%su/2u'", nreg(den_wd));
+	box_putf(box, "\\v'%su'%s\\v'-%su'",
+		nreg(den_fall), box_toreg(den), nreg(den_fall));
+	box_putf(box, "\\h'(-%su+%su)/2u'", nreg(den_wd), nreg(all_wd));
+	box_afterput(box, T_INNER | T_FNX);
+	box_toreg(box);
+	nregrm(num_wd);
+	nregrm(num_dp);
+	nregrm(den_wd);
+	nregrm(den_ht);
+	nregrm(all_wd);
+	nregrm(num_rise);
+	nregrm(den_fall);
+	nregrm(bar_wd);
+	nregrm(bar_dp);
+	nregrm(bar_ht);
+	nregrm(bar_fall);
 }
 
 static void box_buildbracket(struct box *box, char *brac, int inn_ht)
@@ -642,8 +655,8 @@ void box_vcenter(struct box *box, struct box *sub)
 	box_italiccorrection(box);
 	box_beforeput(box, sub->tbeg);
 	tok_dim(box_toreg(sub), wd, ht, dp);
-	printf(".nr %s 0%s+%s/2-%s-(%sp*30u/100u)\n", nregname(fall),
-		nreg(ht), nreg(dp), nreg(dp), nreg(box->szreg));
+	printf(".nr %s 0-%s+%s/2-(%sp*%du/100u)\n", nregname(fall),
+		nreg(dp), nreg(ht), nreg(box->szreg), e_axisheight);
 	box_putf(box, "\\v'%su'%s\\v'-%su'",
 		nreg(fall), box_toreg(sub), nreg(fall));
 	box_toreg(box);
