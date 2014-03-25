@@ -358,6 +358,8 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	/* making the bar longer */
 	printf(".nr %s +2*(%sp*%du/100u)\n",
 		nregname(all_wd), nreg(box->szreg), e_overhang);
+	/* null delimiter space */
+	box_putf(box, "\\h'%sp*%du/100u'",nreg(box->szreg), e_nulldelim);
 	/* drawing the bar */
 	box_putf(box, "\\v'%su'\\f[\\n(.f]\\s[%s]\\l'%su'\\v'-%su'\\h'-%su/2u'",
 		nreg(bar_fall), nreg(box->szreg), nreg(all_wd),
@@ -379,6 +381,7 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	box_putf(box, "\\v'%su'%s\\v'-%su'",
 		nreg(den_fall), box_toreg(den), nreg(den_fall));
 	box_putf(box, "\\h'(-%su+%su)/2u'", nreg(den_wd), nreg(all_wd));
+	box_putf(box, "\\h'%sp*%du/100u'",nreg(box->szreg), e_nulldelim);
 	box_afterput(box, T_INNER | T_FNX);
 	box_toreg(box);
 	nregrm(num_wd);

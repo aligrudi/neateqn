@@ -167,4 +167,5 @@ void reg_reset(void);
 extern int e_axisheight;
 extern int e_minimumsize;
 extern int e_overhang;
+extern int e_nulldelim;
 void def_set(char *name, int val);
