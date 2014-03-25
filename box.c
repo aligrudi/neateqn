@@ -393,7 +393,7 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	nregrm(bar_fall);
 }
 
-static void box_buildbracket(struct box *box, char *brac, int inn_ht)
+static void box_buildbracket(struct box *box, char *brac, int sublen[4])
 {
 	int buildmacro = sregmk();
 	int dst = sregmk();
@@ -401,33 +401,32 @@ static void box_buildbracket(struct box *box, char *brac, int inn_ht)
 	int midlen[4];
 	int botlen[4];
 	int cenlen[4];
-	int one_wd = nregmk();
-	int one_len = nregmk();
+	int onelen[4];
 	int tot_wd = nregmk();
 	int tot_len = nregmk();
 	int mid_cnt = nregmk();
 	int brac_fall = nregmk();
 	int cen_pos = nregmk();
+	int sub_max = nregmk();
 	char *one, *top, *mid, *bot, *cen;
 	one = def_pieces(brac, &top, &mid, &bot, &cen);
 	blen_mk(top, toplen);
 	blen_mk(mid, midlen);
 	blen_mk(bot, botlen);
+	blen_mk(one, onelen);
+	roff_max(sub_max, sublen[2], sublen[3]);
 	if (cen)
 		blen_mk(cen, cenlen);
 	sregrm(buildmacro);
-	tok_len(one, one_wd, one_len, 0, 0);
-	/* the number of mid tokens necessary to cover (inn_ht * 2) */
+	/* the number of mid tokens necessary to cover sub */
 	if (!cen) {
-		printf(".nr %s %su*2u-%su-%su+(%sp*20u/100u)/%su 1\n",
-			nregname(mid_cnt),
-			nreg(inn_ht), nreg(toplen[1]), nreg(botlen[1]),
-			nreg(box->szreg), nreg(midlen[1]));
+		printf(".nr %s %s*2-%s-%s*11/10/%s 1\n",
+			nregname(mid_cnt), nreg(sub_max),
+			nreg(toplen[1]), nreg(botlen[1]), nreg(midlen[1]));
 	} else {	/* for brackets with a center like { */
-		printf(".nr %s %su-(%su+%su+%su+(%sp*10u/100u)/2u)/%su\n",
-			nregname(cen_pos),
-			nreg(inn_ht), nreg(cenlen[1]), nreg(toplen[1]),
-			nreg(botlen[1]), nreg(box->szreg), nreg(midlen[1]));
+		printf(".nr %s %s-(%s+%s+%s/2)*11/10/%s\n",
+			nregname(cen_pos), nreg(sub_max), nreg(cenlen[1]),
+			nreg(toplen[1]), nreg(botlen[1]), nreg(midlen[1]));
 		printf(".if %s<0 .nr %s 0\n", nreg(cen_pos), nregname(cen_pos));
 		printf(".nr %s 0%s*2 1\n", nregname(mid_cnt), nreg(cen_pos));
 	}
@@ -443,11 +442,13 @@ static void box_buildbracket(struct box *box, char *brac, int inn_ht)
 	printf(".if \\\\n-%s .%s\n", escarg(nregname(mid_cnt)), sregname(buildmacro));
 	printf("..\n");
 	/* checking to see if it fits in the normal bracket */
-	printf(".ie %s<=%s \\{\\\n", nreg(inn_ht), nreg(one_len));
-	printf(".ds %s \"%s\\h'-%su'\n", sregname(dst), one, nreg(one_wd));
+	printf(".ie (%s<=(%s*12/10))&(%s<=(%s*12/10)) \\{\\\n",
+		nreg(sublen[2]), nreg(onelen[2]),
+		nreg(sublen[3]), nreg(onelen[3]));
+	printf(".ds %s \"%s\\h'-%su'\n", sregname(dst), one, nreg(onelen[0]));
 	printf(".nr %s 0\n", nregname(tot_len));
 	printf(".nr %s 0\n", nregname(brac_fall));
-	printf(".nr %s %s \\}\n", nregname(tot_wd), nreg(one_wd));
+	printf(".nr %s %s \\}\n", nregname(tot_wd), nreg(onelen[0]));
 	/* otherwise, constructing the bracket using top/mid/bot */
 	printf(".el \\{\\\n");
 	printf(".ds %s \"\\v'-%su'%s\\h'-%su'\\v'-%su'\n",
@@ -475,15 +476,15 @@ static void box_buildbracket(struct box *box, char *brac, int inn_ht)
 	blen_rm(toplen);
 	blen_rm(midlen);
 	blen_rm(botlen);
+	blen_rm(onelen);
 	if (cen)
 		blen_rm(cenlen);
-	nregrm(one_wd);
-	nregrm(one_len);
 	nregrm(tot_wd);
 	nregrm(tot_len);
 	nregrm(mid_cnt);
 	nregrm(brac_fall);
 	nregrm(cen_pos);
+	nregrm(sub_max);
 }
 
 static char *bracsign(char *brac, int left)
@@ -498,24 +499,21 @@ static char *bracsign(char *brac, int left)
 /* build large brackets; the correct font should be set up beforehand */
 void box_wrap(struct box *box, struct box *sub, char *left, char *right)
 {
-	int sub_wd = nregmk();
-	int sub_ht = nregmk();
-	int sub_dp = nregmk();
-	int sub_max = nregmk();	/* twice the the maximum height or depth */
-	tok_dim(box_toreg(sub), sub_wd, sub_ht, sub_dp);
-	roff_max(sub_max, sub_ht, sub_dp);
+	int sublen[4];
+	blen_mk(box_toreg(sub), sublen);
 	printf(".ps %s\n", nreg(box->szreg));
 	if (left) {
 		box_beforeput(box, T_LEFT | T_FNX);
-		box_buildbracket(box, bracsign(left, 1), sub_max);
+		box_buildbracket(box, bracsign(left, 1), sublen);
 		box_afterput(box, T_LEFT | T_FNX);
 	}
 	box_putf(box, "%s", box_toreg(sub));
 	if (right) {
 		box_beforeput(box, T_RIGHT | T_FNX);
-		box_buildbracket(box, bracsign(right, 0), sub_max);
+		box_buildbracket(box, bracsign(right, 0), sublen);
 		box_afterput(box, T_RIGHT | T_FNX);
 	}
+	blen_rm(sublen);
 }
 
 void box_sqrt(struct box *box, struct box *sub)
