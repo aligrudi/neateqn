@@ -221,6 +221,8 @@ int e_scriptspace = 12;
 int e_thinspace = 17;
 int e_mediumspace = 22;
 int e_thickspace = 28;
+int e_num1 = 70;	/* minimum numerator rise */
+int e_denom1 = 70;	/* minimum denominator fall */
 
 static struct gvar {
 	char *name;
@@ -234,6 +236,8 @@ static struct gvar {
 	{"thin_space", &e_thinspace},
 	{"medium_space", &e_mediumspace},
 	{"thick_space", &e_thickspace},
+	{"num1", &e_num1},
+	{"denom1", &e_denom1},
 };
 
 void def_set(char *name, int val)

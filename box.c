@@ -368,16 +368,19 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	/* output the numerator */
 	printf(".nr %s 0%s+(%sp*60u/100u)\n",
 		nregname(num_rise), nreg(num_dp), nreg(box->szreg));
+	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
+		nreg(num_rise), nreg(box->szreg), e_num1,
+		nregname(num_rise), nreg(box->szreg), e_num1);
 	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
 	box_putf(box, "\\v'-%su'%s\\v'%su'",
 		nreg(num_rise), box_toreg(num), nreg(num_rise));
 	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
 	/* output the denominator */
-	printf(".if %su<(%sp*7/10) .nr %s 0%sp*7/10\n",
-		nreg(den_ht), nreg(den->szreg),
-		nregname(den_ht), nreg(den->szreg));
 	printf(".nr %s 0%s+(%sp*10u/100u)\n",
 		nregname(den_fall), nreg(den_ht), nreg(box->szreg));
+	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
+		nreg(den_fall), nreg(box->szreg), e_denom1,
+		nregname(den_fall), nreg(box->szreg), e_denom1);
 	box_putf(box, "\\h'-%su/2u'", nreg(den_wd));
 	box_putf(box, "\\v'%su'%s\\v'-%su'",
 		nreg(den_fall), box_toreg(den), nreg(den_fall));

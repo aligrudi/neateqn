@@ -172,4 +172,6 @@ extern int e_scriptspace;
 extern int e_thinspace;
 extern int e_mediumspace;
 extern int e_thickspace;
+extern int e_num1;
+extern int e_denom1;
 void def_set(char *name, int val);
