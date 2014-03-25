@@ -218,6 +218,9 @@ int e_minimumsize = 5;	/* minimum size */
 int e_overhang = 40;
 int e_nulldelim = 12;
 int e_scriptspace = 12;
+int e_thinspace = 17;
+int e_mediumspace = 22;
+int e_thickspace = 28;
 
 static struct gvar {
 	char *name;
@@ -228,6 +231,9 @@ static struct gvar {
 	{"over_hang", &e_overhang},
 	{"null_delimiter_space", &e_nulldelim},
 	{"script_space", &e_scriptspace},
+	{"thin_space", &e_thinspace},
+	{"medium_space", &e_mediumspace},
+	{"thick_space", &e_thickspace},
 };
 
 void def_set(char *name, int val)

@@ -45,9 +45,9 @@
 #define T_FNX		0x0200		/* other fonts */
 
 /* spaces in hundredths of em */
-#define S_S1		17		/* thin space */
-#define S_S2		22		/* medium space */
-#define S_S3		28		/* thick space */
+#define S_S1		e_thinspace	/* thin space */
+#define S_S2		e_mediumspace	/* medium space */
+#define S_S3		e_thickspace	/* thick space */
 
 /* reading input */
 int in_next(void);
@@ -169,4 +169,7 @@ extern int e_minimumsize;
 extern int e_overhang;
 extern int e_nulldelim;
 extern int e_scriptspace;
+extern int e_thinspace;
+extern int e_mediumspace;
+extern int e_thickspace;
 void def_set(char *name, int val);
