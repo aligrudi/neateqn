@@ -356,7 +356,8 @@ void box_over(struct box *box, struct box *num, struct box *den)
 		nregname(bar_fall), nreg(bar_dp), nreg(bar_ht),
 		nreg(box->szreg), e_axisheight);
 	/* making the bar longer */
-	printf(".nr %s +(%sp*40u/100u)\n", nregname(all_wd), nreg(box->szreg));
+	printf(".nr %s +2*(%sp*%du/100u)\n",
+		nregname(all_wd), nreg(box->szreg), e_overhang);
 	/* drawing the bar */
 	box_putf(box, "\\v'%su'\\f[\\n(.f]\\s[%s]\\l'%su'\\v'-%su'\\h'-%su/2u'",
 		nreg(bar_fall), nreg(box->szreg), nreg(all_wd),

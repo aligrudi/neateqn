@@ -215,6 +215,7 @@ char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 /* global variables */
 int e_axisheight = 23;	/* axis height */
 int e_minimumsize = 5;	/* minimum size */
+int e_overhang = 40;
 
 static struct gvar {
 	char *name;
@@ -222,6 +223,7 @@ static struct gvar {
 } gvars[] = {
 	{"axis_height", &e_axisheight},
 	{"minimum_size", &e_minimumsize},
+	{"over_hang", &e_overhang},
 };
 
 void def_set(char *name, int val)
