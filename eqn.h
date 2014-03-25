@@ -168,4 +168,5 @@ extern int e_axisheight;
 extern int e_minimumsize;
 extern int e_overhang;
 extern int e_nulldelim;
+extern int e_scriptspace;
 void def_set(char *name, int val);

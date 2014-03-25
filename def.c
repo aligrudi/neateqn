@@ -217,6 +217,7 @@ int e_axisheight = 23;	/* axis height */
 int e_minimumsize = 5;	/* minimum size */
 int e_overhang = 40;
 int e_nulldelim = 12;
+int e_scriptspace = 12;
 
 static struct gvar {
 	char *name;
@@ -226,6 +227,7 @@ static struct gvar {
 	{"minimum_size", &e_minimumsize},
 	{"over_hang", &e_overhang},
 	{"null_delimiter_space", &e_nulldelim},
+	{"script_space", &e_scriptspace},
 };
 
 void def_set(char *name, int val)

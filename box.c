@@ -228,7 +228,8 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 		roff_max(all_wd, sub_wd, sup_wd);
 		box_putf(box, "\\h'+%su'", nreg(all_wd));
 	}
-	box_putf(box, "\\h'%sp*5u/100u'", nreg(box->szreg));
+	box_putf(box, "\\h'%sp*%du/100u'",
+		nreg(box->szreg), e_scriptspace);
 	nregrm(box_wd);
 	nregrm(box_wdnoic);
 	nregrm(box_dp);
