@@ -165,4 +165,5 @@ void reg_reset(void);
 
 /* eqn global variables */
 extern int e_axisheight;
+extern int e_minimumsize;
 void def_set(char *name, int val);

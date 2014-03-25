@@ -56,11 +56,18 @@ static int sizeupdate(int *dst, int src, char *new)
 }
 
 /* subscript size */
-static int sizesub(int *dst, int src)
+static int sizesub(int *dst, int src, int style)
 {
 	if (!*dst) {
 		*dst = nregmk();
-		printf(".nr %s %s*7/10\n", nregname(*dst), nreg(src));
+		if (TS_SZ(style) < 2) {
+			printf(".nr %s %s*7/10\n", nregname(*dst), nreg(src));
+			printf(".if %s<%d .nr %s %d\n",
+				nreg(*dst), e_minimumsize,
+				nregname(*dst), e_minimumsize);
+		} else {
+			printf(".nr %s %s\n", nregname(*dst), nreg(src));
+		}
 	}
 	return *dst;
 }
@@ -316,18 +323,18 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	}
 	if (!tok_jmp("sub"))
 		sub_sub = eqn_box(ts_sup(style) | EQN_SUB, NULL,
-				sizesub(&subsz, sz0), fn0);
+				sizesub(&subsz, sz0, style), fn0);
 	if ((sub_sub || !(flg & EQN_SUB)) && !tok_jmp("sup"))
 		sub_sup = eqn_box(ts_sub(style), NULL,
-				sizesub(&subsz, sz0), fn0);
+				sizesub(&subsz, sz0, style), fn0);
 	if (sub_sub || sub_sup)
 		box_sub(box, sub_sub, sub_sup);
 	if (!tok_jmp("from"))
 		sub_from = eqn_box(ts_sub(style) | EQN_FROM, NULL,
-				sizesub(&subsz, sz0), fn0);
+				sizesub(&subsz, sz0, style), fn0);
 	if ((sub_from || !(flg & EQN_FROM)) && !tok_jmp("to"))
 		sub_to = eqn_box(ts_sup(style), NULL,
-				sizesub(&subsz, sz0), fn0);
+				sizesub(&subsz, sz0, style), fn0);
 	if (sub_from || sub_to) {
 		inner = box_alloc(sz0, 0, style);
 		box_from(inner, box, sub_from, sub_to);

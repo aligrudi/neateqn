@@ -214,12 +214,14 @@ char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 
 /* global variables */
 int e_axisheight = 23;	/* axis height */
+int e_minimumsize = 5;	/* minimum size */
 
 static struct gvar {
 	char *name;
 	int *ref;
 } gvars[] = {
 	{"axis_height", &e_axisheight},
+	{"minimum_size", &e_minimumsize},
 };
 
 void def_set(char *name, int val)
@@ -233,14 +235,14 @@ void def_set(char *name, int val)
 /* superscript style */
 int ts_sup(int style)
 {
-	int sz = MAX(2, TS_SZ(style) + 1);
+	int sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, TS_0(style));
 }
 
 /* subscript style */
 int ts_sub(int style)
 {
-	int sz = MAX(2, TS_SZ(style) + 1);
+	int sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, 1);
 }
 
@@ -251,7 +253,7 @@ int ts_num(int style)
 	if (style == TS_D || style == TS_D0)
 		sz = TS_SZ(style);
 	else
-		sz = MAX(2, TS_SZ(style) + 1);
+		sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, TS_0(style));
 }
 
@@ -262,6 +264,6 @@ int ts_denom(int style)
 	if (style == TS_D || style == TS_D0)
 		sz = TS_SZ(style);
 	else
-		sz = MAX(2, TS_SZ(style) + 1);
+		sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, 1);
 }
