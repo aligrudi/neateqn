@@ -631,9 +631,9 @@ void box_bar(struct box *box)
 	printf(".if %su<(%sp*45/100) .nr %s 0%sp*45/100\n",
 		nreg(box_ht), nreg(box->szreg),
 		nregname(box_ht), nreg(box->szreg));
-	printf(".nr %s 0%su+%su+(%sp*10u/100u)\n",
+	printf(".nr %s 0%su+%su+(3*%dm/100u)\n",
 		nregname(bar_rise), nreg(box_ht),
-		nreg(bar_dp), nreg(box->szreg));
+		nreg(bar_dp), e_rulethickness);
 	box_putf(box, "\\v'-%su'\\s%s\\f[\\n(.f]\\l'-%su\\(ru'\\v'%su'",
 		nreg(bar_rise), escarg(nreg(box->szreg)),
 		nreg(box_wd), nreg(bar_rise));
@@ -683,10 +683,11 @@ void box_under(struct box *box)
 	printf(".ps %s\n", nreg(box->szreg));
 	tok_len("\\(ul", bar_wd, 0, bar_ht, 0);
 	tok_dim(box_toreg(box), box_wd, 0, box_dp);
-	printf(".nr %s 0%su+%su+(%sp*10u/100u)\n",
+	printf(".if %s<0 .nr %s 0\n", nreg(box_dp), nregname(box_dp));
+	printf(".nr %s 0%su+%su+(3*%dm/100u)\n",
 		nregname(bar_fall), nreg(box_dp),
-		nreg(bar_ht), nreg(box->szreg));
-	box_putf(box, "\\v'%su'\\s%s\\f[\\n(.f]\\l'-%su\\(ul'\\v'+%su'",
+		nreg(bar_ht), e_rulethickness);
+	box_putf(box, "\\v'%su'\\s%s\\f[\\n(.f]\\l'-%su\\(ul'\\v'-%su'",
 		nreg(bar_fall), escarg(nreg(box->szreg)),
 		nreg(box_wd), nreg(bar_fall));
 	nregrm(box_wd);
