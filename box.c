@@ -180,6 +180,13 @@ static void tok_dim(char *s, int wd, int ht, int dp)
 		printf(".nr %s 0\\n[bblly]\n", nregname(dp));
 }
 
+static int box_suprise(struct box *box)
+{
+	if (TS_0(box->style))
+		return e_sup3;
+	return box->style == TS_D ? e_sup1 : e_sup2;
+}
+
 void box_sub(struct box *box, struct box *sub, struct box *sup)
 {
 	int box_wd = nregmk();
@@ -193,6 +200,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	int sub_ht = nregmk();
 	int sup_rise = nregmk();
 	int sub_fall = nregmk();
+	int tmp_18e = nregmk();
 	if (sub)
 		box_italiccorrection(sub);
 	if (sup)
@@ -200,36 +208,80 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	if (sub)
 		tok_dim(box_toreg(box), box_wdnoic, 0, 0);
 	box_italiccorrection(box);
+	printf(".ps %s\n", nreg(box->szreg));
 	tok_dim(box_toreg(box), box_wd, box_ht, box_dp);
-	box_putf(box, "\\h'%sp*5u/100u'", nreg(box->szreg));
+	box_putf(box, "\\h'5m/100u'");
 	if (sup) {
 		tok_dim(box_toreg(sup), sup_wd, 0, sup_dp);
-		printf(".nr %s 0-%sp*32u/100u-%su\n",
-			nregname(sup_rise), nreg(box->szreg), nreg(sup_dp));
-		box_putf(box, "\\v'%su'%s\\v'-%su'",
+		/* 18a */
+		printf(".nr %s 0%su-(%dm/100u)\n",
+			nregname(sup_rise), nreg(box_ht), e_supdrop);
+		/* 18c */
+		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
+			nregname(sup_rise), box_suprise(box),
+			nregname(sup_rise), box_suprise(box));
+		printf(".if %s<(%s+(%dm/100u/4)) .nr %s 0%s+(%dm/100u/4)\n",
+			nreg(sup_rise), nreg(sup_dp), e_xheight,
+			nregname(sup_rise), nreg(sup_dp), e_xheight);
+	}
+	if (sub) {
+		tok_dim(box_toreg(sub), sub_wd, sub_ht, 0);
+		/* 18a */
+		printf(".nr %s 0%su+(%dm/100u)\n",
+			nregname(sub_fall), nreg(box_dp), e_subdrop);
+	}
+	if (sub && !sup) {
+		/* 18b */
+		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
+			nregname(sub_fall), e_sub1,
+			nregname(sub_fall), e_sub1);
+		printf(".if %s<(%s-(%dm/100u*4/5)) .nr %s 0%s-(%dm/100u*4/5)\n",
+			nreg(sub_fall), nreg(sub_ht), e_xheight,
+			nregname(sub_fall), nreg(sub_ht), e_xheight);
+	}
+	if (sub && sup) {
+		/* 18d */
+		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
+			nregname(sub_fall), e_sub2,
+			nregname(sub_fall), e_sub2);
+		/* 18e */
+		printf(".if (%s-%s)-(%s-%s)<(%dm/100u*4) \\{\\\n",
+			nreg(sup_rise), nreg(sup_dp),
+			nreg(sub_ht), nreg(sub_fall), e_rulethickness);
+		printf(".nr %s (%dm/100u*4)+%s-(%s-%s)\n",
+			nregname(sub_fall), e_rulethickness,
+			nreg(sub_ht), nreg(sup_rise), nreg(sup_dp));
+		printf(".nr %s (%dm/100u*4/5)-(%s-%s)\n",
+			nregname(tmp_18e), e_xheight,
+			nreg(sup_rise), nreg(sup_dp));
+		printf(".if %s>0 .nr %s +%s\n",
+			nreg(tmp_18e), nregname(sup_rise), nreg(tmp_18e));
+		printf(".if %s>0 .nr %s -%s \\}\n",
+			nreg(tmp_18e), nregname(sub_fall), nreg(tmp_18e));
+	}
+	/* writing the superscript */
+	if (sup) {
+		box_putf(box, "\\v'-%su'%s\\v'%su'",
 			nreg(sup_rise), box_toreg(sup), nreg(sup_rise));
 		if (sub)
 			box_putf(box, "\\h'-%su'", nreg(sup_wd));
 	}
+	/* writing the subscript */
 	if (sub) {
-		tok_dim(box_toreg(sub), sub_wd, sub_ht, 0);
-		printf(".nr %s 0-%sp*10u/100u+%su\n",
-			nregname(sub_fall), nreg(box->szreg), nreg(sub_ht));
 		/* subscript correction */
 		printf(".nr %s -(%s-%s)/2\n", nregname(sub_wd),
-				nreg(box_wd), nreg(box_wdnoic));
-		box_putf(box, "\\h'-(%su-%su)/2u'", nreg(box_wd), nreg(box_wdnoic));
+			nreg(box_wd), nreg(box_wdnoic));
+		box_putf(box, "\\h'-(%su-%su)/2u'",
+			nreg(box_wd), nreg(box_wdnoic));
 		box_putf(box, "\\v'%su'%s\\v'-%su'",
 			nreg(sub_fall), box_toreg(sub), nreg(sub_fall));
-		if (sup)
+		if (sup) {
 			box_putf(box, "\\h'-%su'", nreg(sub_wd));
+			roff_max(all_wd, sub_wd, sup_wd);
+			box_putf(box, "\\h'+%su'", nreg(all_wd));
+		}
 	}
-	if (sub && sup) {
-		roff_max(all_wd, sub_wd, sup_wd);
-		box_putf(box, "\\h'+%su'", nreg(all_wd));
-	}
-	box_putf(box, "\\h'%sp*%du/100u'",
-		nreg(box->szreg), e_scriptspace);
+	box_putf(box, "\\h'%dm/100u'", e_scriptspace);
 	nregrm(box_wd);
 	nregrm(box_wdnoic);
 	nregrm(box_dp);
@@ -241,6 +293,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	nregrm(sub_ht);
 	nregrm(sup_rise);
 	nregrm(sub_fall);
+	nregrm(tmp_18e);
 }
 
 void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ulim)

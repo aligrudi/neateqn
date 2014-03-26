@@ -215,7 +215,7 @@ char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 /* global variables */
 int e_axisheight = 23;	/* axis height */
 int e_minimumsize = 5;	/* minimum size */
-int e_overhang = 40;
+int e_overhang = 0;
 int e_nulldelim = 12;
 int e_scriptspace = 12;
 int e_thinspace = 17;
@@ -223,6 +223,15 @@ int e_mediumspace = 22;
 int e_thickspace = 28;
 int e_num1 = 70;	/* minimum numerator rise */
 int e_denom1 = 70;	/* minimum denominator fall */
+int e_sup1 = 42;
+int e_sup2 = 37;
+int e_sup3 = 28;
+int e_sub1 = 20;
+int e_sub2 = 23;
+int e_supdrop = 38;
+int e_subdrop = 5;
+int e_xheight = 45;
+int e_rulethickness = 4;
 
 static struct gvar {
 	char *name;
@@ -238,6 +247,15 @@ static struct gvar {
 	{"thick_space", &e_thickspace},
 	{"num1", &e_num1},
 	{"denom1", &e_denom1},
+	{"sup1", &e_sup1},
+	{"sup2", &e_sup2},
+	{"sup3", &e_sup3},
+	{"sub1", &e_sub1},
+	{"sub2", &e_sub2},
+	{"sup_drop", &e_supdrop},
+	{"sub_drop", &e_subdrop},
+	{"x_height", &e_xheight},
+	{"default_rule_thickness", &e_rulethickness},
 };
 
 void def_set(char *name, int val)
