@@ -241,6 +241,8 @@ int e_bigopspacing4 = 60;
 int e_bigopspacing5 = 10;
 int e_columnsep = 100;
 int e_baselinesep = 140;
+int e_bodyheight = 85;
+int e_bodydepth = 35;
 
 static struct gvar {
 	char *name;
@@ -274,6 +276,8 @@ static struct gvar {
 	{"big_op_spacing5", &e_bigopspacing5},
 	{"column_sep", &e_columnsep},
 	{"baseline_sep", &e_baselinesep},
+	{"body_height", &e_bodyheight},
+	{"body_depth", &e_bodydepth},
 };
 
 void def_set(char *name, int val)

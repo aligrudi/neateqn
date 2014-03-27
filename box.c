@@ -762,10 +762,12 @@ void box_vertspace(struct box *box)
 	int dproom = nregmk();
 	box_italiccorrection(box);
 	/* amount of room available before and after this line */
-	printf(".nr %s 0+\\n(.vu-%sp+(%sp*85u/100u)\n",
-		nregname(htroom), nreg(box->szreg), nreg(box->szreg));
-	printf(".nr %s 0+\\n(.vu-%sp+(%sp*35u/100u)\n",
-		nregname(dproom), nreg(box->szreg), nreg(box->szreg));
+	printf(".nr %s 0+\\n(.vu-%sp+(%sp*%du/100u)\n",
+		nregname(htroom), nreg(box->szreg),
+		nreg(box->szreg), e_bodyheight);
+	printf(".nr %s 0+\\n(.vu-%sp+(%sp*%du/100u)\n",
+		nregname(dproom), nreg(box->szreg),
+		nreg(box->szreg), e_bodydepth);
 	/* appending \x requests */
 	tok_dim(box_toreg(box), box_wd, 0, 0);
 	printf(".if -\\n[bbury]>%s .as %s \"\\x'\\n[bbury]u+%su'\n",

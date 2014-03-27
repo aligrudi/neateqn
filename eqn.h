@@ -193,4 +193,6 @@ extern int e_bigopspacing4;
 extern int e_bigopspacing5;
 extern int e_columnsep;
 extern int e_baselinesep;
+extern int e_bodyheight;
+extern int e_bodydepth;
 void def_set(char *name, int val);
