@@ -469,3 +469,9 @@ void tok_macro(void)
 	in_define(name, sbuf_buf(&def));
 	sbuf_done(&def);
 }
+
+/* return 1 if inside inline equations */
+int tok_inline(void)
+{
+	return tok_line;
+}

@@ -375,12 +375,12 @@ static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0)
 	return box;
 }
 
-static struct box *eqn_read(void)
+static struct box *eqn_read(int style)
 {
 	struct box *box, *sub;
 	int szreg = nregmk();
 	printf(".nr %s %s\n", nregname(szreg), gsize);
-	box = box_alloc(szreg, 0, TS_D);
+	box = box_alloc(szreg, 0, style);
 	while (tok_get()) {
 		if (!tok_jmp("mark")) {
 			eqn_mk = !eqn_mk ? 1 : eqn_mk;
@@ -394,7 +394,7 @@ static struct box *eqn_read(void)
 				escarg(EQNMK), nreg(eqn_lineupreg));
 			continue;
 		}
-		sub = eqn_box(TS_D | EQN_TOP, box, szreg, NULL);
+		sub = eqn_box(style | EQN_TOP, box, szreg, NULL);
 		box_merge(box, sub);
 		box_free(sub);
 	}
@@ -417,7 +417,7 @@ int main(void)
 		printf(".nr %s \\n(.s\n", EQNSZ);
 		printf(".nr %s \\n(.f\n", EQNFN);
 		eqn_lineupreg = nregmk();
-		box = eqn_read();
+		box = eqn_read(tok_inline() ? TS_T : TS_D);
 		printf(".nr MK %d\n", eqn_mk);
 		if (!box_empty(box)) {
 			sprintf(eqnblk, "%s%s", eqn_lineup, box_toreg(box));

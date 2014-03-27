@@ -68,6 +68,7 @@ int tok_type(void);
 int tok_sep(void);
 void tok_delim(void);
 void tok_macro(void);
+int tok_inline(void);
 
 /* default definitions and operators */
 int def_binop(char *s);
