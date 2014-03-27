@@ -234,6 +234,11 @@ int e_supdrop = 38;
 int e_subdrop = 5;
 int e_xheight = 45;
 int e_rulethickness = 4;
+int e_bigopspacing1 = 11;
+int e_bigopspacing2 = 17;
+int e_bigopspacing3 = 20;
+int e_bigopspacing4 = 60;
+int e_bigopspacing5 = 10;
 
 static struct gvar {
 	char *name;
@@ -260,6 +265,11 @@ static struct gvar {
 	{"sub_drop", &e_subdrop},
 	{"x_height", &e_xheight},
 	{"default_rule_thickness", &e_rulethickness},
+	{"big_op_spacing1", &e_bigopspacing1},
+	{"big_op_spacing2", &e_bigopspacing2},
+	{"big_op_spacing3", &e_bigopspacing3},
+	{"big_op_spacing4", &e_bigopspacing4},
+	{"big_op_spacing5", &e_bigopspacing5},
 };
 
 void def_set(char *name, int val)

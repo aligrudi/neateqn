@@ -310,6 +310,7 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 	int all_wd = nregmk();		/* the width of all */
 	box_italiccorrection(lim);
 	tok_dim(box_toreg(lim), lim_wd, lim_ht, lim_dp);
+	printf(".ps %s\n", nreg(box->szreg));
 	if (ulim)
 		tok_dim(box_toreg(ulim), ulim_wd, 0, ulim_dp);
 	if (llim)
@@ -326,17 +327,27 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 	box_merge(box, lim);
 	box_putf(box, "\\h'-%su/2u'", nreg(lim_wd));
 	if (ulim) {
-		printf(".nr %s 0-%su-%su-(%sp*20u/100u)\n",
-			nregname(ulim_rise), nreg(lim_ht),
-			nreg(ulim_dp), nreg(ulim->szreg));
-		box_putf(box, "\\h'-%su/2u'\\v'%su'%s\\v'-%su'\\h'-%su/2u'",
+		/* 13a */
+		printf(".nr %s (%dm/100u)-%s\n",
+			nregname(ulim_rise), e_bigopspacing3, nreg(ulim_dp));
+		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
+			nreg(ulim_rise), e_bigopspacing1,
+			nregname(ulim_rise), e_bigopspacing1);
+		printf(".nr %s +%s+%s\n",
+			nregname(ulim_rise), nreg(lim_ht), nreg(ulim_dp));
+		box_putf(box, "\\h'-%su/2u'\\v'-%su'%s\\v'%su'\\h'-%su/2u'",
 			nreg(ulim_wd), nreg(ulim_rise), box_toreg(ulim),
 			nreg(ulim_rise), nreg(ulim_wd));
 	}
 	if (llim) {
-		printf(".nr %s 0+%su+%su+(%sp*20u/100u)\n",
-			nregname(llim_fall), nreg(lim_dp),
-			nreg(llim_ht), nreg(llim->szreg));
+		/* 13a */
+		printf(".nr %s (%dm/100u)-%s\n",
+			nregname(llim_fall), e_bigopspacing4, nreg(llim_ht));
+		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
+			nreg(llim_fall), e_bigopspacing2,
+			nregname(llim_fall), e_bigopspacing2);
+		printf(".nr %s +%s+%s\n",
+			nregname(llim_fall), nreg(lim_dp), nreg(llim_ht));
 		box_putf(box, "\\h'-%su/2u'\\v'%su'%s\\v'-%su'\\h'-%su/2u'",
 			nreg(llim_wd), nreg(llim_fall), box_toreg(llim),
 			nreg(llim_fall), nreg(llim_wd));
