@@ -650,9 +650,8 @@ void box_bar(struct box *box)
 	printf(".ps %s\n", nreg(box->szreg));
 	tok_len("\\(ru", bar_wd, 0, 0, bar_dp);
 	tok_dim(box_toreg(box), box_wd, box_ht, 0);
-	printf(".if %su<(%sp*45/100) .nr %s 0%sp*45/100\n",
-		nreg(box_ht), nreg(box->szreg),
-		nregname(box_ht), nreg(box->szreg));
+	printf(".if %su<(%dm/100u) .nr %s 0%dm/100u\n",
+		nreg(box_ht), e_xheight, nregname(box_ht), e_xheight);
 	printf(".nr %s 0%su+%su+(3*%dm/100u)\n",
 		nregname(bar_rise), nreg(box_ht),
 		nreg(bar_dp), e_rulethickness);
@@ -677,9 +676,8 @@ void box_accent(struct box *box, char *c)
 	printf(".ps %s\n", nreg(box->szreg));
 	tok_len(c, ac_wd, 0, 0, ac_dp);
 	tok_dim(box_toreg(box), box_wd, box_ht, 0);
-	printf(".if %su<(%sp*45/100) .nr %s 0%sp*45/100\n",
-		nreg(box_ht), nreg(box->szreg),
-		nregname(box_ht), nreg(box->szreg));
+	printf(".if %su<(%dm/100u) .nr %s 0%dm/100u\n",
+		nreg(box_ht), e_xheight, nregname(box_ht), e_xheight);
 	printf(".nr %s 0%su+%su+(%sp*10u/100u)\n",
 		nregname(ac_rise), nreg(box_ht),
 		nreg(ac_dp), nreg(box->szreg));
