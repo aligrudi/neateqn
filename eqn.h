@@ -108,6 +108,7 @@ int sbuf_empty(struct sbuf *sbuf);
 #define TS_MK(s, p)	(((s) << 4) | (p))
 #define TS_0(s)		((s) & 0x01)	/* primed variant */
 #define TS_SZ(s)	((s) >> 4)	/* character size */
+#define TS_DX(s)	((s) == TS_D || (s) == TS_D0)
 
 int ts_sup(int style);
 int ts_sub(int style);
@@ -173,7 +174,9 @@ extern int e_thinspace;
 extern int e_mediumspace;
 extern int e_thickspace;
 extern int e_num1;
+extern int e_num2;
 extern int e_denom1;
+extern int e_denom2;
 extern int e_sup1;
 extern int e_sup2;
 extern int e_sup3;

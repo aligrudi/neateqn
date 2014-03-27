@@ -222,7 +222,9 @@ int e_thinspace = 17;
 int e_mediumspace = 22;
 int e_thickspace = 28;
 int e_num1 = 70;	/* minimum numerator rise */
+int e_num2 = 40;
 int e_denom1 = 70;	/* minimum denominator fall */
+int e_denom2 = 36;
 int e_sup1 = 42;
 int e_sup2 = 37;
 int e_sup3 = 28;
@@ -246,7 +248,9 @@ static struct gvar {
 	{"medium_space", &e_mediumspace},
 	{"thick_space", &e_thickspace},
 	{"num1", &e_num1},
+	{"num2", &e_num2},
 	{"denom1", &e_denom1},
+	{"denom2", &e_denom2},
 	{"sup1", &e_sup1},
 	{"sup2", &e_sup2},
 	{"sup3", &e_sup3},

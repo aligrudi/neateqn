@@ -397,7 +397,8 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	int bar_dp = nregmk();
 	int bar_ht = nregmk();
 	int bar_fall = nregmk();
-
+	int tmp_15d = nregmk();
+	int bargap = (TS_DX(box->style) ? 7 : 3) * e_rulethickness / 2;
 	box_beforeput(box, T_INNER | T_FNX);
 	box_italiccorrection(num);
 	box_italiccorrection(den);
@@ -405,13 +406,32 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	tok_dim(box_toreg(den), den_wd, den_ht, 0);
 	roff_max(all_wd, num_wd, den_wd);
 	tok_len("\\(ru", bar_wd, 0, bar_ht, bar_dp);
+	printf(".ps %s\n", nreg(box->szreg));
+	/* 15b */
+	printf(".nr %s 0%dm/100u\n",
+		nregname(num_rise), TS_DX(box->style) ? e_num1 : e_num2);
+	printf(".nr %s 0%dm/100u\n",
+		nregname(den_fall), TS_DX(box->style) ? e_denom1 : e_denom2);
+	/* 15d */
+	printf(".nr %s (%s-%s)-((%dm/100u)+(%dm/100u/2))\n",
+		nregname(tmp_15d), nreg(num_rise), nreg(num_dp),
+		e_axisheight, e_rulethickness);
+	printf(".if %s<(%dm/100u) .nr %s +(%dm/100u)-%s\n",
+		nreg(tmp_15d), bargap, nregname(num_rise),
+		bargap, nreg(tmp_15d));
+	printf(".nr %s ((%dm/100u)-(%dm/100u/2))-(%s-%s)\n",
+		nregname(tmp_15d), e_axisheight, e_rulethickness,
+		nreg(den_ht), nreg(den_fall));
+	printf(".if %s<(%dm/100u) .nr %s +(%dm/100u)-%s\n",
+		nreg(tmp_15d), bargap, nregname(den_fall),
+		bargap, nreg(tmp_15d));
 	/* calculating the vertical position of the bar */
-	printf(".nr %s 0-%s+%s/2-(%sp*%du/100u)\n",
-		nregname(bar_fall), nreg(bar_dp), nreg(bar_ht),
-		nreg(box->szreg), e_axisheight);
+	printf(".nr %s 0-%s+%s/2-(%dm/100u)\n",
+		nregname(bar_fall), nreg(bar_dp),
+		nreg(bar_ht), e_axisheight);
 	/* making the bar longer */
-	printf(".nr %s +2*(%sp*%du/100u)\n",
-		nregname(all_wd), nreg(box->szreg), e_overhang);
+	printf(".nr %s +2*(%dm/100u)\n",
+		nregname(all_wd), e_overhang);
 	/* null delimiter space */
 	box_putf(box, "\\h'%sp*%du/100u'",nreg(box->szreg), e_nulldelim);
 	/* drawing the bar */
@@ -419,21 +439,11 @@ void box_over(struct box *box, struct box *num, struct box *den)
 		nreg(bar_fall), nreg(box->szreg), nreg(all_wd),
 		nreg(bar_fall), nreg(all_wd));
 	/* output the numerator */
-	printf(".nr %s 0%s+(%sp*60u/100u)\n",
-		nregname(num_rise), nreg(num_dp), nreg(box->szreg));
-	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
-		nreg(num_rise), nreg(box->szreg), e_num1,
-		nregname(num_rise), nreg(box->szreg), e_num1);
 	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
 	box_putf(box, "\\v'-%su'%s\\v'%su'",
 		nreg(num_rise), box_toreg(num), nreg(num_rise));
 	box_putf(box, "\\h'-%su/2u'", nreg(num_wd));
 	/* output the denominator */
-	printf(".nr %s 0%s+(%sp*10u/100u)\n",
-		nregname(den_fall), nreg(den_ht), nreg(box->szreg));
-	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
-		nreg(den_fall), nreg(box->szreg), e_denom1,
-		nregname(den_fall), nreg(box->szreg), e_denom1);
 	box_putf(box, "\\h'-%su/2u'", nreg(den_wd));
 	box_putf(box, "\\v'%su'%s\\v'-%su'",
 		nreg(den_fall), box_toreg(den), nreg(den_fall));
@@ -452,6 +462,7 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	nregrm(bar_dp);
 	nregrm(bar_ht);
 	nregrm(bar_fall);
+	nregrm(tmp_15d);
 }
 
 static void box_buildbracket(struct box *box, char *brac, int sublen[4])
