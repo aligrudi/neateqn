@@ -322,18 +322,18 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		}
 	}
 	if (!tok_jmp("sub"))
-		sub_sub = eqn_box(ts_sup(style) | EQN_SUB, NULL,
+		sub_sub = eqn_left(ts_sup(style) | EQN_SUB, NULL,
 				sizesub(&subsz, sz0, style), fn0);
 	if ((sub_sub || !(flg & EQN_SUB)) && !tok_jmp("sup"))
-		sub_sup = eqn_box(ts_sub(style), NULL,
+		sub_sup = eqn_left(ts_sub(style), NULL,
 				sizesub(&subsz, sz0, style), fn0);
 	if (sub_sub || sub_sup)
 		box_sub(box, sub_sub, sub_sup);
 	if (!tok_jmp("from"))
-		sub_from = eqn_box(ts_sub(style) | EQN_FROM, NULL,
+		sub_from = eqn_left(ts_sub(style) | EQN_FROM, NULL,
 				sizesub(&subsz, sz0, style), fn0);
 	if ((sub_from || !(flg & EQN_FROM)) && !tok_jmp("to"))
-		sub_to = eqn_box(ts_sup(style), NULL,
+		sub_to = eqn_left(ts_sup(style), NULL,
 				sizesub(&subsz, sz0, style), fn0);
 	if (sub_from || sub_to) {
 		inner = box_alloc(sz0, 0, style);
