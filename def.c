@@ -239,6 +239,8 @@ int e_bigopspacing2 = 17;
 int e_bigopspacing3 = 20;
 int e_bigopspacing4 = 60;
 int e_bigopspacing5 = 10;
+int e_columnsep = 100;
+int e_baselinesep = 140;
 
 static struct gvar {
 	char *name;
@@ -270,6 +272,8 @@ static struct gvar {
 	{"big_op_spacing3", &e_bigopspacing3},
 	{"big_op_spacing4", &e_bigopspacing4},
 	{"big_op_spacing5", &e_bigopspacing5},
+	{"column_sep", &e_columnsep},
+	{"baseline_sep", &e_baselinesep},
 };
 
 void def_set(char *name, int val)

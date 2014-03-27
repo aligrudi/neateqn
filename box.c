@@ -867,7 +867,11 @@ void box_pile(struct box *box, struct box **pile, int adj)
 	box_beforeput(box, T_INNER | T_FNX);
 	box_colinit(pile, n, plen, max_wd, max_ht);
 	/* inserting spaces between entries */
-	printf(".nr %s +(%sp*50u/100u)\n", nregname(max_ht), nreg(box->szreg));
+	printf(".nr %s +(%sp*20u/100u)\n",
+		nregname(max_ht), nreg(box->szreg));
+	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
+		nreg(max_ht), nreg(box->szreg), e_baselinesep,
+		nregname(max_ht), nreg(box->szreg), e_baselinesep);
 	/* adding the entries */
 	box_colput(pile, n, box, adj, plen, max_wd, max_ht);
 	box_coldone(pile, n, plen);
@@ -912,11 +916,16 @@ void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES], int *adj
 			nregname(max_ht), nreg(ht[i]));
 	}
 	/* inserting spaces between rows */
-	printf(".nr %s +(%sp*50u/100u)\n", nregname(max_ht), nreg(box->szreg));
+	printf(".nr %s +(%sp*20u/100u)\n",
+		nregname(max_ht), nreg(box->szreg));
+	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
+		nreg(max_ht), nreg(box->szreg), e_baselinesep,
+		nregname(max_ht), nreg(box->szreg), e_baselinesep);
 	/* printing the columns */
 	for (i = 0; i < ncols; i++) {
 		if (i)		/* space between columns */
-			box_putf(box, "\\h'%sp*100u/100u'", nreg(box->szreg));
+			box_putf(box, "\\h'%sp*%du/100u'",
+				nreg(box->szreg), e_columnsep);
 		box_colput(cols[i], nrows, box, adj[i],
 				plen[i], max_wd, max_ht);
 	}
