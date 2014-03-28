@@ -19,7 +19,7 @@
 /* token and atom types */
 #define T_TOK(t)	((t) & 0x00ff)
 #define T_ATOM(t)	((t) & 0x00f0)
-#define T_FONT(t)	((t) & T_FNMASK)
+#define T_FONT(t)	((t) & T_ITALIC)
 #define T_ATOMIDX(t)	((((t) >> 4) & 15) - 1)
 
 #define T_EOF		0x0000		/* parser-specific */
@@ -39,10 +39,7 @@
 #define T_PUNC		0x0070		/* punctuation symbol */
 #define T_INNER		0x0080		/* like fractions */
 
-#define T_FNMASK	0x0f00		/* font mask */
-#define T_FN0		0x0000		/* nothing */
-#define T_FN2		0x0100		/* italic font */
-#define T_FNX		0x0200		/* other fonts */
+#define T_ITALIC	0x0100		/* atom with italic font */
 
 /* spaces in hundredths of em */
 #define S_S1		e_thinspace	/* thin space */

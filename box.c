@@ -85,9 +85,9 @@ static int eqn_gaps(struct box *box, int cur)
 /* call just before inserting a non-italic character */
 static void box_italiccorrection(struct box *box)
 {
-	if (!box->empty && (box->tcur & T_FN2))
+	if (!box->empty && (box->tcur & T_ITALIC))
 		box_put(box, "\\/");
-	box->tcur &= ~T_FNMASK;
+	box->tcur &= ~T_ITALIC;
 }
 
 static int box_fixatom(int cur, int pre)
@@ -138,10 +138,10 @@ void box_puttext(struct box *box, int type, char *s, ...)
 	va_start(ap, s);
 	vsprintf(buf, s, ap);
 	va_end(ap);
-	if (!(type & T_FN2))
+	if (!(type & T_ITALIC))
 		box_italiccorrection(box);
 	box_beforeput(box, type);
-	if (!(box->tcur & T_FN2) && (type & T_FN2))
+	if (!(box->tcur & T_ITALIC) && (type & T_ITALIC))
 		box_put(box, "\\,");
 	box_put(box, buf);
 	box_afterput(box, type);
@@ -152,7 +152,7 @@ void box_merge(struct box *box, struct box *sub)
 {
 	if (box_empty(sub))
 		return;
-	if (!(sub->tbeg & T_FN2))
+	if (!(sub->tbeg & T_ITALIC))
 		box_italiccorrection(box);
 	box_beforeput(box, sub->tbeg);
 	box_toreg(box);
@@ -309,7 +309,7 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 	int llim_fall = nregmk();	/* the position of llim */
 	int all_wd = nregmk();		/* the width of all */
 	box_italiccorrection(lim);
-	box_beforeput(box, T_BIGOP | T_FNX);
+	box_beforeput(box, T_BIGOP);
 	tok_dim(box_toreg(lim), lim_wd, lim_ht, lim_dp);
 	printf(".ps %s\n", nreg(box->szreg));
 	if (ulim)
@@ -354,7 +354,7 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 			nreg(llim_fall), nreg(llim_wd));
 	}
 	box_putf(box, "\\h'%su/2u'", nreg(all_wd));
-	box_afterput(box, T_BIGOP | T_FNX);
+	box_afterput(box, T_BIGOP);
 	nregrm(lim_wd);
 	nregrm(lim_ht);
 	nregrm(lim_dp);
@@ -412,7 +412,7 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	int bar_fall = nregmk();
 	int tmp_15d = nregmk();
 	int bargap = (TS_DX(box->style) ? 7 : 3) * e_rulethickness / 2;
-	box_beforeput(box, T_INNER | T_FNX);
+	box_beforeput(box, T_INNER);
 	box_italiccorrection(num);
 	box_italiccorrection(den);
 	tok_dim(box_toreg(num), num_wd, 0, num_dp);
@@ -462,7 +462,7 @@ void box_over(struct box *box, struct box *num, struct box *den)
 		nreg(den_fall), box_toreg(den), nreg(den_fall));
 	box_putf(box, "\\h'(-%su+%su)/2u'", nreg(den_wd), nreg(all_wd));
 	box_putf(box, "\\h'%sp*%du/100u'",nreg(box->szreg), e_nulldelim);
-	box_afterput(box, T_INNER | T_FNX);
+	box_afterput(box, T_INNER);
 	box_toreg(box);
 	nregrm(num_wd);
 	nregrm(num_dp);
@@ -588,15 +588,15 @@ void box_wrap(struct box *box, struct box *sub, char *left, char *right)
 	blen_mk(box_toreg(sub), sublen);
 	printf(".ps %s\n", nreg(box->szreg));
 	if (left) {
-		box_beforeput(box, T_LEFT | T_FNX);
+		box_beforeput(box, T_LEFT);
 		box_buildbracket(box, bracsign(left, 1), sublen);
-		box_afterput(box, T_LEFT | T_FNX);
+		box_afterput(box, T_LEFT);
 	}
 	box_putf(box, "%s", box_toreg(sub));
 	if (right) {
-		box_beforeput(box, T_RIGHT | T_FNX);
+		box_beforeput(box, T_RIGHT);
 		box_buildbracket(box, bracsign(right, 0), sublen);
-		box_afterput(box, T_RIGHT | T_FNX);
+		box_afterput(box, T_RIGHT);
 	}
 	blen_rm(sublen);
 }
@@ -611,7 +611,7 @@ void box_sqrt(struct box *box, struct box *sub)
 	int ex_wd = nregmk();
 	int ex_dp = nregmk();
 	box_italiccorrection(sub);
-	box_beforeput(box, T_FNX | T_ORD);
+	box_beforeput(box, T_ORD);
 	blen_mk(box_toreg(sub), sublen);
 	tok_len("\\(sr", sr_wd, 0, 0, sr_dp);
 	tok_len("\\(rn", ex_wd, 0, 0, ex_dp);
@@ -630,7 +630,7 @@ void box_sqrt(struct box *box, struct box *sub)
 		nreg(sublen[0]), nreg(sr_fall));
 	/* the rest */
 	box_putf(box, "%s", box_toreg(sub));
-	box_afterput(box, T_FNX | T_ORD);
+	box_afterput(box, T_ORD);
 	box_toreg(box);
 	blen_rm(sublen);
 	nregrm(sr_sz);
@@ -866,7 +866,7 @@ void box_pile(struct box *box, struct box **pile, int adj)
 	int max_ht = nregmk();
 	int n = box_colnrows(pile);
 	box_italiccorrection(box);
-	box_beforeput(box, T_INNER | T_FNX);
+	box_beforeput(box, T_INNER);
 	box_colinit(pile, n, plen, max_wd, max_ht);
 	/* inserting spaces between entries */
 	printf(".nr %s +(%sp*20u/100u)\n",
@@ -877,7 +877,7 @@ void box_pile(struct box *box, struct box **pile, int adj)
 	/* adding the entries */
 	box_colput(pile, n, box, adj, plen, max_wd, max_ht);
 	box_coldone(pile, n, plen);
-	box_afterput(box, T_INNER | T_FNX);
+	box_afterput(box, T_INNER);
 	box_toreg(box);
 	nregrm(max_wd);
 	nregrm(max_ht);
@@ -893,7 +893,7 @@ void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES], int *adj
 	int nrows = 0;
 	int i;
 	box_italiccorrection(box);
-	box_beforeput(box, T_INNER | T_FNX);
+	box_beforeput(box, T_INNER);
 	for (i = 0; i < ncols; i++)
 		if (box_colnrows(cols[i]) > nrows)
 			nrows = box_colnrows(cols[i]);
@@ -931,7 +931,7 @@ void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES], int *adj
 		box_colput(cols[i], nrows, box, adj[i],
 				plen[i], max_wd, max_ht);
 	}
-	box_afterput(box, T_INNER | T_FNX);
+	box_afterput(box, T_INNER);
 	box_toreg(box);
 	for (i = 0; i < ncols; i++)
 		box_coldone(cols[i], nrows, plen[i]);

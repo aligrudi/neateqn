@@ -11,7 +11,7 @@
 #include <string.h>
 #include "eqn.h"
 
-#define FN2(fn)	((!(fn)[1] && ((fn)[0] == 'I' || (fn)[0] == '2')) ? T_FN2 : T_FNX)
+#define FN2(fn)	((!(fn)[1] && ((fn)[0] == 'I' || (fn)[0] == '2')) ? T_ITALIC : 0)
 
 /* flags passed to eqn_box() */
 #define EQN_TSMASK	0x00ffff	/* style mask */
@@ -96,17 +96,17 @@ static int eqn_commands(struct box *box, int szreg)
 		return 0;
 	}
 	if (!tok_jmp("~")) {
-		box_puttext(box, T_GAP | T_FNX, "\\h'%du*%sp/100u'",
+		box_puttext(box, T_GAP, "\\h'%du*%sp/100u'",
 				S_S3, nreg(szreg));
 		return 0;
 	}
 	if (!tok_jmp("^")) {
-		box_puttext(box, T_GAP | T_FNX, "\\h'%du*%sp/100u'",
+		box_puttext(box, T_GAP, "\\h'%du*%sp/100u'",
 				S_S1, nreg(szreg));
 		return 0;
 	}
 	if (!tok_jmp("\t")) {
-		box_puttext(box, T_GAP | T_FNX, "\t");
+		box_puttext(box, T_GAP, "\t");
 		return 0;
 	}
 	if (!tok_jmp("gfont")) {
