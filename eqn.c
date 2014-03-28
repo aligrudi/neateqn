@@ -44,32 +44,25 @@ static int eqn_boxuntil(struct box *box, int sz0, char *fn0, char *delim)
 }
 
 /* update sz0 by sz1 and write it into sz */
-static int sizeupdate(int *dst, int src, char *new)
+static void sizeupdate(int dst, int src, char *new)
 {
-	if (!*dst)
-		*dst = nregmk();
 	if (new[0] == '-' || new[0] == '+')
-		printf(".nr %s %s%s\n", nregname(*dst), nreg(src), new);
+		printf(".nr %s %s%s\n", nregname(dst), nreg(src), new);
 	else
-		printf(".nr %s %s\n", nregname(*dst), new);
-	return *dst;
+		printf(".nr %s %s\n", nregname(dst), new);
 }
 
 /* subscript size */
-static int sizesub(int *dst, int src, int style)
+static void sizesub(int dst, int src, int style, int src_style)
 {
-	if (!*dst) {
-		*dst = nregmk();
-		if (TS_SZ(style) < 2) {
-			printf(".nr %s %s*7/10\n", nregname(*dst), nreg(src));
-			printf(".if %s<%d .nr %s %d\n",
-				nreg(*dst), e_minimumsize,
-				nregname(*dst), e_minimumsize);
-		} else {
-			printf(".nr %s %s\n", nregname(*dst), nreg(src));
-		}
+	if (TS_SZ(style) > TS_SZ(src_style)) {
+		printf(".nr %s %s*7/10\n", nregname(dst), nreg(src));
+		printf(".if %s<%d .nr %s %d\n",
+			nreg(dst), e_minimumsize,
+			nregname(dst), e_minimumsize);
+	} else {
+		printf(".nr %s %s\n", nregname(dst), nreg(src));
 	}
-	return *dst;
 }
 
 static char *tok_removequotes(char *s)
@@ -219,7 +212,9 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	struct box *sub_from = NULL, *sub_to = NULL;
 	char left[NMLEN] = "", right[NMLEN] = "";
 	char fn[FNLEN] = "";
-	int sz = sz0, newsz = 0, subsz = 0;
+	int sz = sz0;
+	int newsz = nregmk();
+	int subsz = nregmk();
 	int dx = 0, dy = 0;
 	int style = EQN_TSMASK & flg;
 	if (fn0)
@@ -238,7 +233,8 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		} else if (!tok_jmp("font")) {
 			strcpy(fn, tok_poptext());
 		} else if (!tok_jmp("size")) {
-			sz = sizeupdate(&newsz, sz, tok_poptext());
+			sizeupdate(newsz, sz, tok_poptext());
+			sz = newsz;
 		} else if (!tok_jmp("fwd")) {
 			dx += atoi(tok_poptext());
 		} else if (!tok_jmp("back")) {
@@ -321,30 +317,32 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			break;
 		}
 	}
-	if (!tok_jmp("sub"))
-		sub_sub = eqn_left(ts_sup(style) | EQN_SUB, NULL,
-				sizesub(&subsz, sz0, style), fn0);
-	if ((sub_sub || !(flg & EQN_SUB)) && !tok_jmp("sup"))
-		sub_sup = eqn_left(ts_sub(style), NULL,
-				sizesub(&subsz, sz0, style), fn0);
+	if (!tok_jmp("sub")) {
+		sizesub(subsz, sz0, ts_sup(style), style);
+		sub_sub = eqn_left(ts_sup(style) | EQN_SUB, NULL, subsz, fn0);
+	}
+	if ((sub_sub || !(flg & EQN_SUB)) && !tok_jmp("sup")) {
+		sizesub(subsz, sz0, ts_sub(style), style);
+		sub_sup = eqn_left(ts_sub(style), NULL, subsz, fn0);
+	}
 	if (sub_sub || sub_sup)
 		box_sub(box, sub_sub, sub_sup);
-	if (!tok_jmp("from"))
-		sub_from = eqn_left(ts_sub(style) | EQN_FROM, NULL,
-				sizesub(&subsz, sz0, style), fn0);
-	if ((sub_from || !(flg & EQN_FROM)) && !tok_jmp("to"))
-		sub_to = eqn_left(ts_sup(style), NULL,
-				sizesub(&subsz, sz0, style), fn0);
+	if (!tok_jmp("from")) {
+		sizesub(subsz, sz0, ts_sub(style), style);
+		sub_from = eqn_left(ts_sub(style) | EQN_FROM, NULL, subsz, fn0);
+	}
+	if ((sub_from || !(flg & EQN_FROM)) && !tok_jmp("to")) {
+		sizesub(subsz, sz0, ts_sup(style), style);
+		sub_to = eqn_left(ts_sup(style), NULL, subsz, fn0);
+	}
 	if (sub_from || sub_to) {
 		inner = box_alloc(sz0, 0, style);
 		box_from(inner, box, sub_from, sub_to);
 		box_free(box);
 		box = inner;
 	}
-	if (subsz)
-		nregrm(subsz);
-	if (newsz)
-		nregrm(newsz);
+	nregrm(subsz);
+	nregrm(newsz);
 	if (sub_sub)
 		box_free(sub_sub);
 	if (sub_sup)
@@ -365,7 +363,7 @@ static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0)
 	box = eqn_left(flg, pre, sz0, fn0);
 	while (!tok_jmp("over")) {
 		sub_num = box;
-		sub_den = eqn_left(style, NULL, sz0, fn0);
+		sub_den = eqn_left(TS_MK(TS_SZ(style), 1), NULL, sz0, fn0);
 		box = box_alloc(sz0, pre ? pre->tcur : 0, style);
 		printf(".ft %s\n", grfont);
 		box_over(box, sub_num, sub_den);
