@@ -309,6 +309,7 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 	int llim_fall = nregmk();	/* the position of llim */
 	int all_wd = nregmk();		/* the width of all */
 	box_italiccorrection(lim);
+	box_beforeput(box, T_BIGOP | T_FNX);
 	tok_dim(box_toreg(lim), lim_wd, lim_ht, lim_dp);
 	printf(".ps %s\n", nreg(box->szreg));
 	if (ulim)
@@ -353,6 +354,7 @@ void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ul
 			nreg(llim_fall), nreg(llim_wd));
 	}
 	box_putf(box, "\\h'%su/2u'", nreg(all_wd));
+	box_afterput(box, T_BIGOP | T_FNX);
 	nregrm(lim_wd);
 	nregrm(lim_ht);
 	nregrm(lim_dp);
