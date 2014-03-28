@@ -25,12 +25,12 @@
 #define T_EOF		0x0000		/* parser-specific */
 #define T_SPACE		0x0001
 #define T_TAB		0x0002
-#define T_GAP		0x0003
-#define T_KEYWORD	0x0004
+#define T_KEYWORD	0x0003
 #define T_ORD		0x0010		/* ordinary */
 #define T_LETTER	0x0011
 #define T_NUMBER	0x0012
 #define T_STRING	0x0013
+#define T_GAP		0x0014
 #define T_BIGOP		0x0020		/* big operators */
 #define T_BINOP		0x0030		/* binary operators */
 #define T_RELOP		0x0040		/* relational symbol */

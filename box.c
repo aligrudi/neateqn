@@ -106,7 +106,7 @@ static void box_beforeput(struct box *box, int type)
 	int autogaps;
 	if (!box->empty) {
 		autogaps = eqn_gaps(box, T_ATOM(type));
-		if (!box->tgap && autogaps) {
+		if (autogaps && type != T_GAP && box->tcur != T_GAP) {
 			box_italiccorrection(box);
 			box_putf(box, "\\h'%du*%sp/100u'",
 					autogaps, nreg(box->szreg));
@@ -122,12 +122,9 @@ static void box_beforeput(struct box *box, int type)
 static void box_afterput(struct box *box, int type)
 {
 	box->empty = 0;
-	box->tgap = T_TOK(type) == T_GAP;
-	if (T_TOK(type) != T_GAP) {
-		box->tcur = T_FONT(type) | box_fixatom(T_ATOM(type), box->tcur);
-		if (!box->tbeg)
-			box->tbeg = box->tcur;
-	}
+	box->tcur = T_FONT(type) | box_fixatom(T_TOK(type), box->tcur);
+	if (!box->tbeg)
+		box->tbeg = box->tcur;
 }
 
 /* insert s with the given type */
