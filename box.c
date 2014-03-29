@@ -10,7 +10,7 @@ struct box *box_alloc(int szreg, int pre, int style)
 	memset(box, 0, sizeof(*box));
 	sbuf_init(&box->raw);
 	box->szreg = szreg;
-	box->empty = 1;
+	box->atoms = 0;
 	box->style = style;
 	if (pre)
 		box->tcur = pre;
@@ -85,7 +85,7 @@ static int eqn_gaps(struct box *box, int cur)
 /* call just before inserting a non-italic character */
 static void box_italiccorrection(struct box *box)
 {
-	if (!box->empty && (box->tcur & T_ITALIC))
+	if (box->atoms && (box->tcur & T_ITALIC))
 		box_put(box, "\\/");
 	box->tcur &= ~T_ITALIC;
 }
@@ -104,7 +104,7 @@ static int box_fixatom(int cur, int pre)
 static void box_beforeput(struct box *box, int type)
 {
 	int autogaps;
-	if (!box->empty) {
+	if (box->atoms) {
 		autogaps = eqn_gaps(box, T_ATOM(type));
 		if (autogaps && type != T_GAP && box->tcur != T_GAP) {
 			box_italiccorrection(box);
@@ -121,8 +121,8 @@ static void box_beforeput(struct box *box, int type)
 /* call after inserting a token with box_put() and box_putf()  */
 static void box_afterput(struct box *box, int type)
 {
-	box->empty = 0;
-	box->tcur = T_FONT(type) | box_fixatom(T_TOK(type), box->tcur);
+	box->atoms++;
+	box->tcur = T_FONT(type) | box_fixatom(T_TOK(type), T_TOK(box->tcur));
 	if (!box->tbeg)
 		box->tbeg = box->tcur;
 }
@@ -156,7 +156,13 @@ void box_merge(struct box *box, struct box *sub)
 	box_put(box, box_toreg(sub));
 	if (!box->tbeg)
 		box->tbeg = sub->tbeg;
-	box_afterput(box, sub->tcur);
+	/* fix atom type only if merging a single atom */
+	if (sub->atoms == 1) {
+		box_afterput(box, sub->tcur);
+	} else {
+		box->tcur = sub->tcur;
+		box->atoms += sub->atoms;
+	}
 }
 
 /* put the maximum of number registers a and b into register dst */

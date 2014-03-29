@@ -118,9 +118,8 @@ struct box {
 	struct sbuf raw;	/* the contents */
 	int szreg;		/* number register holding box size */
 	int reg;		/* register holding the contents */
-	int empty;		/* nothing has been inserted yet */
+	int atoms;		/* the number of atoms inserted */
 	int tbeg, tcur;		/* type of the first and the last atoms */
-	int tgap;		/* the last item added was a T_GAP */
 	int style;		/* tex style (TS_*) */
 	char *tomark;		/* register for saving box width */
 };
