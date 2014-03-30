@@ -160,12 +160,16 @@ static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 	struct box *pile[NPILES] = {NULL};
 	int i;
 	int n = 0;
-	tok_expect("{");
+	int rowspace = 0;
+	if (tok_jmp("{")) {
+		rowspace = atoi(tok_poptext());
+		tok_expect("{");
+	}
 	do {
 		pile[n++] = box_alloc(sz0, 0, box->style);
 	} while (!eqn_boxuntil(pile[n - 1], sz0, fn0, "above"));
 	tok_expect("}");
-	box_pile(box, pile, adj);
+	box_pile(box, pile, adj, rowspace);
 	for (i = 0; i < n; i++)
 		box_free(pile[i]);
 }
@@ -176,8 +180,13 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 	int adj[NPILES];
 	int nrows;
 	int ncols = 0;
+	int colspace = 0;
+	int rowspace = 0;
 	int i, j;
-	tok_expect("{");
+	if (tok_jmp("{")) {
+		colspace = atoi(tok_poptext());
+		tok_expect("{");
+	}
 	while (1) {
 		if (!tok_jmp("col") || !tok_jmp("ccol"))
 			adj[ncols] = 'c';
@@ -188,7 +197,12 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 		else
 			break;
 		nrows = 0;
-		tok_expect("{");
+		if (tok_jmp("{")) {
+			i = atoi(tok_poptext());
+			if (i > rowspace)
+				rowspace = i;
+			tok_expect("{");
+		}
 		do {
 			cols[ncols][nrows++] = box_alloc(sz0, 0, box->style);
 		} while (!eqn_boxuntil(cols[ncols][nrows - 1],
@@ -197,7 +211,7 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 		ncols++;
 	}
 	tok_expect("}");
-	box_matrix(box, ncols, cols, adj);
+	box_matrix(box, ncols, cols, adj, colspace, rowspace);
 	for (i = 0; i < ncols; i++)
 		for (j = 0; j < NPILES; j++)
 			if (cols[i][j])
