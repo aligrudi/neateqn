@@ -221,7 +221,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 			nregname(sup_rise), nreg(box_ht), e_supdrop);
 		/* 18c */
 		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
-			nregname(sup_rise), box_suprise(box),
+			nreg(sup_rise), box_suprise(box),
 			nregname(sup_rise), box_suprise(box));
 		printf(".if %s<(%s+(%dm/100u/4)) .nr %s 0%s+(%dm/100u/4)\n",
 			nreg(sup_rise), nreg(sup_dp), e_xheight,
@@ -236,7 +236,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	if (sub && !sup) {
 		/* 18b */
 		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
-			nregname(sub_fall), e_sub1,
+			nreg(sub_fall), e_sub1,
 			nregname(sub_fall), e_sub1);
 		printf(".if %s<(%s-(%dm/100u*4/5)) .nr %s 0%s-(%dm/100u*4/5)\n",
 			nreg(sub_fall), nreg(sub_ht), e_xheight,
@@ -245,7 +245,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	if (sub && sup) {
 		/* 18d */
 		printf(".if %s<(%dm/100u) .nr %s (%dm/100u)\n",
-			nregname(sub_fall), e_sub2,
+			nreg(sub_fall), e_sub2,
 			nregname(sub_fall), e_sub2);
 		/* 18e */
 		printf(".if (%s-%s)-(%s-%s)<(%dm/100u*4) \\{\\\n",
