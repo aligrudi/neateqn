@@ -8,12 +8,14 @@
 #define T_BIN(c1, c2)		(((c1) << 8) | (c2))
 #define T_SEP			"^~{}\"\n\t "
 #define T_SOFTSEP		(T_SEP "=:|.+-*/\\,()[]<>!")
+#define ERESTORE		"\\s[\\n[" EQNSZ "]]\\f[\\n[" EQNFN "]]"
 
 static char *kwds[] = {
 	"fwd", "down", "back", "up",
 	"bold", "italic", "roman", "font", "fat", "size",
 	"bar", "dot", "dotdot", "dyad", "hat", "under", "vec", "tilde",
-	"left", "right", "over", "sqrt", "sub", "sup", "from", "to", "vcenter",
+	"sub", "sup", "from", "to", "vcenter",
+	"left", "right", "over", "sqrt",
 	"pile", "lpile", "cpile", "rpile", "above",
 	"matrix", "col", "ccol", "lcol", "rcol",
 	"delim", "define",
@@ -197,7 +199,7 @@ int tok_eqn(void)
 			}
 		}
 		if (c == '\n' && tok_part) {
-			printf("\\*%s%s", escarg(EQNS), ln);
+			printf("%s\\*%s%s", ERESTORE, escarg(EQNS), ln);
 			tok_part = 0;
 		}
 	}
@@ -207,12 +209,11 @@ int tok_eqn(void)
 /* collect the output of this eqn block */
 void tok_eqnout(char *s)
 {
-	char post[128];
-	sprintf(post, "\\s[\\n[%s]]\\f[\\n[%s]]", EQNSZ, EQNFN);
 	if (!tok_part)
-		printf(".ds %s \"%s%s\n\\&\\*%s\n", EQNS, s, post, escarg(EQNS));
+		printf(".ds %s \"%s%s\n\\&\\*%s\n",
+			EQNS, s, ERESTORE, escarg(EQNS));
 	else
-		printf(".as %s \"%s%s\n", EQNS, s, post);
+		printf(".as %s \"%s%s\n", EQNS, s, ERESTORE);
 }
 
 /* return the length of a utf-8 character based on its first byte */
