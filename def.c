@@ -306,10 +306,9 @@ int ts_sub(int style)
 int ts_num(int style)
 {
 	int sz;
-	if (style == TS_D || style == TS_D0)
-		sz = TS_SZ(style);
-	else
-		sz = MIN(2, TS_SZ(style) + 1);
+	if (TS_DX(style))
+		return TS_0(style) ? TS_T0 : TS_T;
+	sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, TS_0(style));
 }
 
@@ -317,9 +316,8 @@ int ts_num(int style)
 int ts_denom(int style)
 {
 	int sz;
-	if (style == TS_D || style == TS_D0)
-		sz = TS_SZ(style);
-	else
-		sz = MIN(2, TS_SZ(style) + 1);
+	if (TS_DX(style))
+		return TS_T0;
+	sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, 1);
 }

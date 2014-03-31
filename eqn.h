@@ -105,8 +105,10 @@ int sbuf_empty(struct sbuf *sbuf);
 
 #define TS_MK(s, p)	(((s) << 4) | (p))
 #define TS_0(s)		((s) & 0x01)	/* primed variant */
+#define TS_MK0(s)	((s) | 0x01)	/* make style primed */
 #define TS_SZ(s)	((s) >> 4)	/* character size */
 #define TS_DX(s)	((s) == TS_D || (s) == TS_D0)
+#define TS_TXT(s)	((s) & 0x02)	/* text style */
 
 int ts_sup(int style);
 int ts_sub(int style);
