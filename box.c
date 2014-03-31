@@ -604,44 +604,79 @@ void box_wrap(struct box *box, struct box *sub, char *left, char *right)
 	blen_rm(sublen);
 }
 
+/* construct a radical with height at least ht and width wd in dst register */
+static void sqrt_rad(int dst, int ht, int wd)
+{
+	int srlen[4];
+	int exlen[4];
+	int sr_sz = nregmk();
+	int wd_diff = nregmk();		/* if wd is shorter than \(rn */
+	blen_mk("\\(sr", srlen);
+	printf(".ie %s<(%s+%s) .nr %s 0\\n(.s\n",
+		nreg(ht), nreg(srlen[2]), nreg(srlen[3]), nregname(sr_sz));
+	printf(".el .nr %s 0%s*\\n(.s/(%s+%s)+1\n",
+		nregname(sr_sz), nreg(ht),
+		nreg(srlen[2]), nreg(srlen[3]));
+	printf(".ps %s\n", nreg(sr_sz));
+	blen_rm(srlen);
+	blen_mk("\\(sr", srlen);
+	blen_mk("\\(rn", exlen);
+	printf(".nr %s 0\n", nregname(wd_diff));
+	printf(".if %s<%s .nr %s 0%s-%s\n",
+		nreg(wd), nreg(exlen[0]),
+		nregname(wd_diff), nreg(exlen[0]), nreg(wd));
+	/* output the radical; align the top of \(sr to the baseline */
+	printf(".ds %s \"\\s[\\n(.s]\\f[\\n(.f]"
+		"\\v'-%su'\\l'%su+%su\\(rn'\\v'%su'"
+		"\\h'-%su-%su'\\v'%su'\\(sr\\v'-%su'\\h'%su+%su'\n",
+		nregname(dst),
+		nreg(exlen[3]), nreg(wd), nreg(wd_diff), nreg(exlen[3]),
+		nreg(wd), nreg(wd_diff),
+		nreg(srlen[2]), nreg(srlen[2]), nreg(wd), nreg(wd_diff));
+	blen_rm(srlen);
+	blen_rm(exlen);
+	nregrm(sr_sz);
+	nregrm(wd_diff);
+}
+
 void box_sqrt(struct box *box, struct box *sub)
 {
 	int sublen[4];
-	int sr_sz = nregmk();
-	int sr_fall = nregmk();
-	int sr_wd = nregmk();
-	int sr_dp = nregmk();
-	int ex_wd = nregmk();
-	int ex_dp = nregmk();
+	int radlen[4];
+	int rad = sregmk();
+	int rad_rise = nregmk();
+	int min_ht = nregmk();
 	box_italiccorrection(sub);
 	box_beforeput(box, T_ORD);
 	blen_mk(box_toreg(sub), sublen);
-	tok_len("\\(sr", sr_wd, 0, 0, sr_dp);
-	tok_len("\\(rn", ex_wd, 0, 0, ex_dp);
-	printf(".ie %s<(%s-%s) .nr %s 0%s\n",
-		nreg(sublen[1]), nreg(sr_dp), nreg(ex_dp),
-		nregname(sr_sz), nreg(box->szreg));
-	printf(".el .nr %s 0%s+(%sp*30u/100u)*%s/(%s-%s)+1\n",
-		nregname(sr_sz), nreg(sublen[1]), nreg(box->szreg),
-		nreg(box->szreg), nreg(sr_dp), nreg(ex_dp));
-	printf(".ps %s\n", nreg(sr_sz));
-	printf(".nr %s 0%su-%su\n", nregname(sr_fall),
-		nreg(sublen[3]), nreg(sr_dp));
+	printf(".ps %s\n", nreg(box->szreg));
+	/* 11 */
+	printf(".nr %s 0%s+%s+(2*%dm/100u)+(%dm/100u/4)\n",
+		nregname(min_ht), nreg(sublen[2]), nreg(sublen[3]),
+		e_rulethickness,
+		TS_DX(box->style) ? e_xheight : e_rulethickness);
+	sqrt_rad(rad, min_ht, sublen[0]);
+	blen_mk(sreg(rad), radlen);
+	printf(".nr %s 0(%dm/100u)+(%dm/100u/4)\n",
+		nregname(rad_rise), e_rulethickness,
+		TS_DX(box->style) ? e_xheight : e_rulethickness);
+	printf(".if %s>(%s+%s+%s) .nr %s (%s+%s-%s-%s)/2\n",
+		nreg(radlen[3]), nreg(sublen[2]), nreg(sublen[3]),
+		nreg(rad_rise), nregname(rad_rise),
+		nreg(rad_rise), nreg(radlen[3]), nreg(sublen[2]),
+		nreg(sublen[3]));
+	printf(".nr %s +%s\n", nregname(rad_rise), nreg(sublen[2]));
 	/* output the radical */
-	box_putf(box, "\\s[\\n(.s]\\f[\\n(.f]\\v'%su'\\l'%su\\(rn'\\h'-%su'\\(sr\\v'-%su'",
-		nreg(sr_fall), nreg(sublen[0]),
-		nreg(sublen[0]), nreg(sr_fall));
-	/* the rest */
-	box_putf(box, "%s", box_toreg(sub));
+	box_putf(box, "\\v'-%su'%s\\v'%su'\\h'-%su'%s",
+		nreg(rad_rise), sreg(rad), nreg(rad_rise),
+		nreg(sublen[0]), box_toreg(sub));
 	box_afterput(box, T_ORD);
 	box_toreg(box);
 	blen_rm(sublen);
-	nregrm(sr_sz);
-	nregrm(sr_fall);
-	nregrm(sr_wd);
-	nregrm(sr_dp);
-	nregrm(ex_wd);
-	nregrm(ex_dp);
+	blen_rm(radlen);
+	sregrm(rad);
+	nregrm(rad_rise);
+	nregrm(min_ht);
 }
 
 void box_bar(struct box *box)
