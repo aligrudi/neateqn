@@ -215,7 +215,7 @@ char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 /* global variables */
 int e_axisheight = 23;	/* axis height */
 int e_minimumsize = 5;	/* minimum size */
-int e_overhang = 0;
+int e_overhang = 7;
 int e_nulldelim = 12;
 int e_scriptspace = 12;
 int e_thinspace = 17;
