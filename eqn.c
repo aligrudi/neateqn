@@ -264,7 +264,8 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	if (!tok_get())
 		return box;
 	if (!tok_jmp("sqrt")) {
-		sqrt = eqn_left(style, NULL, sz, fn);
+		sqrt = eqn_left(TS_MK0(style), NULL, sz, fn);
+		printf(".ft %s\n", grfont);
 		box_sqrt(box, sqrt);
 		box_free(sqrt);
 	} else if (!tok_jmp("pile") || !tok_jmp("cpile")) {
@@ -377,7 +378,7 @@ static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0)
 	box = eqn_left(flg, pre, sz0, fn0);
 	while (!tok_jmp("over")) {
 		sub_num = box;
-		sub_den = eqn_left(TS_MK(TS_SZ(style), 1), NULL, sz0, fn0);
+		sub_den = eqn_left(TS_MK0(style), NULL, sz0, fn0);
 		box = box_alloc(sz0, pre ? pre->tcur : 0, style);
 		printf(".ft %s\n", grfont);
 		box_over(box, sub_num, sub_den);
