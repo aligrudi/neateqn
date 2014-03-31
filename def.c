@@ -88,7 +88,7 @@ char *def_macros[][2] = {
 	{"min",		"roman \"min\""},
 	{"nothing",	""},
 	{"partial",	"\\(pd"},
-	{"prime",	"roman \"\\v'.5m'\\s+3\\(fm\\s-3\\v'-.5m'\""},
+	{"prime",	"roman \\(fm"},
 	{"prod",	"{vcenter roman size +2 \\(pr}"},
 	{"sin",		"roman \"sin\""},
 	{"sinh",	"roman \"sinh\""},

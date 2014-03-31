@@ -80,6 +80,8 @@ static char *tok_improve(char *s)
 		return "\\(mi";
 	if (s[0] == '+' && s[1] == '\0')
 		return "\\(pl";
+	if (s[0] == '\'' && s[1] == '\0')
+		return "\\(fm";
 	return tok_removequotes(s);
 }
 
