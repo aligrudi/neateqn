@@ -199,7 +199,9 @@ int tok_eqn(void)
 			}
 		}
 		if (c == '\n' && tok_part) {
-			printf("%s\\*%s%s", ERESTORE, escarg(EQNS), ln);
+			printf(".ps \\n%s\n", escarg(EQNSZ));
+			printf(".ft \\n%s\n", escarg(EQNFN));
+			printf("\\*%s%s", escarg(EQNS), ln);
 			tok_part = 0;
 		}
 	}
