@@ -85,7 +85,7 @@ static char *tok_improve(char *s)
 	return tok_removequotes(s);
 }
 
-static int eqn_commands(struct box *box, int szreg)
+static int eqn_commands(void)
 {
 	char var[LNLEN];
 	char *sz;
@@ -95,20 +95,6 @@ static int eqn_commands(struct box *box, int szreg)
 	}
 	if (!tok_jmp("define")) {
 		tok_macro();
-		return 0;
-	}
-	if (!tok_jmp("~")) {
-		box_puttext(box, T_GAP, "\\h'%du*%sp/100u'",
-				S_S3, nreg(szreg));
-		return 0;
-	}
-	if (!tok_jmp("^")) {
-		box_puttext(box, T_GAP, "\\h'%du*%sp/100u'",
-				S_S1, nreg(szreg));
-		return 0;
-	}
-	if (!tok_jmp("\t")) {
-		box_puttext(box, T_GAP, "\t");
 		return 0;
 	}
 	if (!tok_jmp("gfont")) {
@@ -134,6 +120,25 @@ static int eqn_commands(struct box *box, int szreg)
 	if (!tok_jmp("set")) {
 		strcpy(var, tok_poptext());
 		def_set(var, atoi(tok_poptext()));
+		return 0;
+	}
+	return 1;
+}
+
+static int eqn_gaps(struct box *box, int szreg)
+{
+	if (!tok_jmp("~")) {
+		box_puttext(box, T_GAP, "\\h'%du*%sp/100u'",
+				S_S3, nreg(szreg));
+		return 0;
+	}
+	if (!tok_jmp("^")) {
+		box_puttext(box, T_GAP, "\\h'%du*%sp/100u'",
+				S_S1, nreg(szreg));
+		return 0;
+	}
+	if (!tok_jmp("\t")) {
+		box_puttext(box, T_GAP, "\t");
 		return 0;
 	}
 	return 1;
@@ -223,9 +228,10 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 /* read a box without fractions */
 static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 {
-	struct box *box, *sqrt, *inner;
+	struct box *box = NULL;
 	struct box *sub_sub = NULL, *sub_sup = NULL;
 	struct box *sub_from = NULL, *sub_to = NULL;
+	struct box *sqrt, *inner;
 	char left[NMLEN] = "", right[NMLEN] = "";
 	char fn[FNLEN] = "";
 	int sz = sz0;
@@ -235,8 +241,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	int style = EQN_TSMASK & flg;
 	if (fn0)
 		strcpy(fn, fn0);
-	box = box_alloc(sz0, pre ? pre->tcur : 0, style);
-	while (!eqn_commands(box, sz))
+	while (!eqn_commands())
 		;
 	while (1) {
 		if (!tok_jmp("fat")) {
@@ -263,8 +268,9 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			break;
 		}
 	}
-	if (!tok_get())
-		return box;
+	box = box_alloc(sz, pre ? pre->tcur : 0, style);
+	while (!eqn_gaps(box, sz))
+		;
 	if (!tok_jmp("sqrt")) {
 		sqrt = eqn_left(TS_MK0(style), NULL, sz, fn);
 		printf(".ft %s\n", grfont);
@@ -292,7 +298,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		printf(".ft %s\n", grfont);
 		box_wrap(box, inner, left[0] ? left : NULL,
 				right[0] ? right : NULL);
-	} else {
+	} else if (tok_get()) {
 		if (dx || dy)
 			box_move(box, dy, dx);
 		box_putf(box, "\\s%s", escarg(nreg(sz)));
