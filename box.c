@@ -421,8 +421,8 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	tok_dim(box_toreg(num), num_wd, 0, num_dp);
 	tok_dim(box_toreg(den), den_wd, den_ht, 0);
 	roff_max(all_wd, num_wd, den_wd);
-	tok_len("\\(ru", bar_wd, 0, bar_ht, bar_dp);
 	printf(".ps %s\n", nreg(box->szreg));
+	tok_len("\\(ru", bar_wd, 0, bar_ht, bar_dp);
 	/* 15b */
 	printf(".nr %s 0%dm/100u\n",
 		nregname(num_rise), TS_DX(box->style) ? e_num1 : e_num2);
@@ -608,9 +608,11 @@ void box_wrap(struct box *box, struct box *sub, char *left, char *right)
 static void sqrt_rad(int dst, int ht, int wd)
 {
 	int srlen[4];
-	int exlen[4];
+	int rnlen[4];
 	int sr_sz = nregmk();
 	int wd_diff = nregmk();		/* if wd is shorter than \(rn */
+	int sr_rx = nregmk();		/* the right-most horizontal position of \(sr */
+	int rn_dx = nregmk();		/* horizontal displacement necessary for \(rn */
 	blen_mk("\\(sr", srlen);
 	printf(".ie %s<(%s+%s) .nr %s 0\\n(.s\n",
 		nreg(ht), nreg(srlen[2]), nreg(srlen[3]), nregname(sr_sz));
@@ -620,23 +622,28 @@ static void sqrt_rad(int dst, int ht, int wd)
 	printf(".ps %s\n", nreg(sr_sz));
 	blen_rm(srlen);
 	blen_mk("\\(sr", srlen);
-	blen_mk("\\(rn", exlen);
+	printf(".nr %s \\n[bburx]\n", nregname(sr_rx));
+	blen_mk("\\(rn", rnlen);
+	printf(".nr %s 0%s-\\n[bbllx]-(%dm/100u)\n",
+		nregname(rn_dx), nreg(sr_rx), e_rulethickness);
 	printf(".nr %s 0\n", nregname(wd_diff));
 	printf(".if %s<%s .nr %s 0%s-%s\n",
-		nreg(wd), nreg(exlen[0]),
-		nregname(wd_diff), nreg(exlen[0]), nreg(wd));
+		nreg(wd), nreg(rnlen[0]),
+		nregname(wd_diff), nreg(rnlen[0]), nreg(wd));
 	/* output the radical; align the top of \(sr to the baseline */
 	printf(".ds %s \"\\s[\\n(.s]\\f[\\n(.f]"
-		"\\v'-%su'\\l'%su+%su\\(rn'\\v'%su'"
+		"\\v'-%su'\\h'%su'\\l'%su+%su\\(rn'\\h'-%su'\\v'%su'"
 		"\\h'-%su-%su'\\v'%su'\\(sr\\v'-%su'\\h'%su+%su'\n",
 		nregname(dst),
-		nreg(exlen[3]), nreg(wd), nreg(wd_diff), nreg(exlen[3]),
+		nreg(rnlen[3]), nreg(rn_dx), nreg(wd), nreg(wd_diff), nreg(rn_dx), nreg(rnlen[3]),
 		nreg(wd), nreg(wd_diff),
 		nreg(srlen[2]), nreg(srlen[2]), nreg(wd), nreg(wd_diff));
 	blen_rm(srlen);
-	blen_rm(exlen);
+	blen_rm(rnlen);
 	nregrm(sr_sz);
 	nregrm(wd_diff);
+	nregrm(sr_rx);
+	nregrm(rn_dx);
 }
 
 void box_sqrt(struct box *box, struct box *sub)
