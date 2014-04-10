@@ -133,8 +133,13 @@ static int tok_keyword(void)
 static int tok_readarg(struct sbuf *sbuf)
 {
 	int c = in_next();
-	while (c > 0 && c != ',' && c != ')') {
+	int pdepth = 0;		/* number of nested parenthesis */
+	while (c > 0 && (pdepth || (c != ',' && c != ')'))) {
 		sbuf_add(sbuf, c);
+		if (c == ')')
+			pdepth++;
+		if (c == '(')
+			pdepth--;
 		c = in_next();
 	}
 	return c == ',' ? 0 : 1;
