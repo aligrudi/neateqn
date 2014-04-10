@@ -59,7 +59,7 @@ int tok_eqn(void);
 void tok_eqnout(char *s);
 char *tok_get(void);
 char *tok_pop(void);
-char *tok_poptext(void);
+char *tok_poptext(int sep);
 int tok_jmp(char *kwd);
 int tok_type(void);
 int tok_sep(void);

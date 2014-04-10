@@ -98,19 +98,19 @@ static int eqn_commands(void)
 		return 0;
 	}
 	if (!tok_jmp("gfont")) {
-		strcpy(gfont, tok_removequotes(tok_poptext()));
+		strcpy(gfont, tok_removequotes(tok_poptext(1)));
 		return 0;
 	}
 	if (!tok_jmp("grfont")) {
-		strcpy(grfont, tok_removequotes(tok_poptext()));
+		strcpy(grfont, tok_removequotes(tok_poptext(1)));
 		return 0;
 	}
 	if (!tok_jmp("gbfont")) {
-		strcpy(gbfont, tok_removequotes(tok_poptext()));
+		strcpy(gbfont, tok_removequotes(tok_poptext(1)));
 		return 0;
 	}
 	if (!tok_jmp("gsize")) {
-		sz = tok_removequotes(tok_poptext());
+		sz = tok_removequotes(tok_poptext(1));
 		if (sz[0] == '-' || sz[0] == '+')
 			sprintf(gsize, "\\n%s%s", escarg(EQNSZ), sz);
 		else
@@ -118,8 +118,8 @@ static int eqn_commands(void)
 		return 0;
 	}
 	if (!tok_jmp("set")) {
-		strcpy(var, tok_poptext());
-		def_set(var, atoi(tok_poptext()));
+		strcpy(var, tok_poptext(1));
+		def_set(var, atoi(tok_poptext(1)));
 		return 0;
 	}
 	return 1;
@@ -169,7 +169,7 @@ static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 	int n = 0;
 	int rowspace = 0;
 	if (tok_jmp("{")) {
-		rowspace = atoi(tok_poptext());
+		rowspace = atoi(tok_poptext(1));
 		tok_expect("{");
 	}
 	do {
@@ -191,7 +191,7 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 	int rowspace = 0;
 	int i, j;
 	if (tok_jmp("{")) {
-		colspace = atoi(tok_poptext());
+		colspace = atoi(tok_poptext(1));
 		tok_expect("{");
 	}
 	while (1) {
@@ -205,7 +205,7 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 			break;
 		nrows = 0;
 		if (tok_jmp("{")) {
-			i = atoi(tok_poptext());
+			i = atoi(tok_poptext(1));
 			if (i > rowspace)
 				rowspace = i;
 			tok_expect("{");
@@ -252,18 +252,18 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		} else if (!tok_jmp("bold")) {
 			strcpy(fn, gbfont);
 		} else if (!tok_jmp("font")) {
-			strcpy(fn, tok_poptext());
+			strcpy(fn, tok_poptext(1));
 		} else if (!tok_jmp("size")) {
-			sizeupdate(newsz, sz, tok_poptext());
+			sizeupdate(newsz, sz, tok_poptext(1));
 			sz = newsz;
 		} else if (!tok_jmp("fwd")) {
-			dx += atoi(tok_poptext());
+			dx += atoi(tok_poptext(1));
 		} else if (!tok_jmp("back")) {
-			dx -= atoi(tok_poptext());
+			dx -= atoi(tok_poptext(1));
 		} else if (!tok_jmp("down")) {
-			dy += atoi(tok_poptext());
+			dy += atoi(tok_poptext(1));
 		} else if (!tok_jmp("up")) {
-			dy -= atoi(tok_poptext());
+			dy -= atoi(tok_poptext(1));
 		} else {
 			break;
 		}
@@ -292,9 +292,9 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		eqn_boxuntil(box, sz, fn, "}");
 	} else if (!tok_jmp("left")) {
 		inner = box_alloc(sz, 0, style);
-		snprintf(left, sizeof(left), "%s", tok_improve(tok_poptext()));
+		snprintf(left, sizeof(left), "%s", tok_improve(tok_poptext(0)));
 		eqn_boxuntil(inner, sz, fn, "right");
-		snprintf(right, sizeof(right), "%s", tok_improve(tok_poptext()));
+		snprintf(right, sizeof(right), "%s", tok_improve(tok_poptext(0)));
 		printf(".ft %s\n", grfont);
 		box_wrap(box, inner, left[0] ? left : NULL,
 				right[0] ? right : NULL);

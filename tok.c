@@ -402,8 +402,8 @@ char *tok_pop(void)
 	return tok_prev[0] ? tok_prev : NULL;
 }
 
-/* like tok_pop() but read the next T_SEP-separated token */
-char *tok_poptext(void)
+/* like tok_pop() but ignore T_SPACE tokens; if sep, read until T_SEP */
+char *tok_poptext(int sep)
 {
 	while (tok_type() == T_SPACE)
 		tok_read();
@@ -411,7 +411,7 @@ char *tok_poptext(void)
 	do {
 		strcat(tok_prev, tok);
 		tok_read();
-	} while (tok[0] && !tok_sep());
+	} while (tok[0] && (sep && !tok_sep()));
 	return tok_prev[0] ? tok_prev : NULL;
 }
 
