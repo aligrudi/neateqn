@@ -43,15 +43,6 @@ static int eqn_boxuntil(struct box *box, int sz0, char *fn0, char *delim)
 	return 0;
 }
 
-/* update sz0 by sz1 and write it into sz */
-static void sizeupdate(int dst, int src, char *new)
-{
-	if (new[0] == '-' || new[0] == '+')
-		printf(".nr %s %s%s\n", nregname(dst), nreg(src), new);
-	else
-		printf(".nr %s %s\n", nregname(dst), new);
-}
-
 /* subscript size */
 static void sizesub(int dst, int src, int style, int src_style)
 {
@@ -235,13 +226,15 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	char left[NMLEN] = "", right[NMLEN] = "";
 	char fn[FNLEN] = "";
 	int sz = sz0;
-	int newsz = nregmk();
 	int subsz = nregmk();
 	int dx = 0, dy = 0;
 	int style = EQN_TSMASK & flg;
 	if (fn0)
 		strcpy(fn, fn0);
 	while (!eqn_commands())
+		;
+	box = box_alloc(sz, pre ? pre->tcur : 0, style);
+	while (!eqn_gaps(box, sz))
 		;
 	while (1) {
 		if (!tok_jmp("fat")) {
@@ -254,8 +247,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		} else if (!tok_jmp("font")) {
 			strcpy(fn, tok_poptext(1));
 		} else if (!tok_jmp("size")) {
-			sizeupdate(newsz, sz, tok_poptext(1));
-			sz = newsz;
+			printf(".nr %s %s\n", nregname(sz), tok_poptext(1));
 		} else if (!tok_jmp("fwd")) {
 			dx += atoi(tok_poptext(1));
 		} else if (!tok_jmp("back")) {
@@ -268,9 +260,6 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			break;
 		}
 	}
-	box = box_alloc(sz, pre ? pre->tcur : 0, style);
-	while (!eqn_gaps(box, sz))
-		;
 	if (!tok_jmp("sqrt")) {
 		sqrt = eqn_left(TS_MK0(style), NULL, sz, fn);
 		printf(".ft %s\n", grfont);
@@ -365,7 +354,6 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		box = inner;
 	}
 	nregrm(subsz);
-	nregrm(newsz);
 	if (sub_sub)
 		box_free(sub_sub);
 	if (sub_sup)
