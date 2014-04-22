@@ -139,6 +139,67 @@ static char *relops[] = {
 	"↓", "\\(da",
 };
 
+/* open brackets are in even indices */
+static struct brac {
+	char *one;
+	char *top;
+	char *mid;
+	char *bot;
+	char *cen;
+	char *sizes[8];		/* different sizes of the bracket */
+} bracs[] = {
+	{"(", "\\(LT", "\\(LX", "\\(LB", NULL,
+		{"\\N'parenleftbig'", "\\N'parenleftBig'",
+		 "\\N'parenleftbigg'", "\\N'parenleftBigg'"}},
+	{")", "\\(RT", "\\(RX", "\\(RB", NULL,
+		{"\\N'parenrightbig'", "\\N'parenrightBig'",
+		 "\\N'parenrightbigg'", "\\N'parenrightBigg'"}},
+	{"[", "\\(lc", "\\(lx", "\\(lf", NULL,
+		{"\\N'bracketleftbig'", "\\N'bracketleftBig'",
+		 "\\N'bracketleftbigg'", "\\N'bracketleftBigg'"}},
+	{"]", "\\(rc", "\\(rx", "\\(rf", NULL,
+		{"\\N'bracketrightbig'", "\\N'bracketrightBig'",
+		 "\\N'bracketrightbigg'", "\\N'bracketrightBigg'"}},
+	{"{", "\\(lt", "\\(bv", "\\(lb", "\\(lk",
+		{"\\N'braceleftbig'", "\\N'braceleftBig'",
+		 "\\N'braceleftbigg'", "\\N'braceleftBigg'"}},
+	{"}", "\\(rt", "\\(bv", "\\(rb", "\\(rk",
+		{"\\N'bracerightbig'", "\\N'bracerightBig'",
+		 "\\N'bracerightbigg'", "\\N'bracerightBigg'"}},
+	{"\\(lc", "\\(lc", "\\(lx", "\\(lx", NULL,
+		{"\\N'ceilingleft'",
+		 "\\N'ceilingleftbig'", "\\N'ceilingleftBig'",
+		 "\\N'ceilingleftbigg'", "\\N'ceilingleftBigg'"}},
+	{"\\(rc", "\\(rc", "\\(rx", "\\(rx", NULL,
+		{"\\N'ceilingright'",
+		 "\\N'ceilingrightbig'", "\\N'ceilingrightBig'",
+		 "\\N'ceilingrightbigg'", "\\N'ceilingrightBigg'"}},
+	{"\\(lf", "\\(lx", "\\(lx", "\\(lf", NULL,
+		{"\\N'floorleft'",
+		 "\\N'floorleftbig'", "\\N'floorleftBig'",
+		 "\\N'floorleftbigg'", "\\N'floorleftBigg'"}},
+	{"\\(rf", "\\(rx", "\\(rx", "\\(rf", NULL,
+		{"\\N'floorright'",
+		 "\\N'floorrightbig'", "\\N'floorrightBig'",
+		 "\\N'floorrightbigg'", "\\N'floorrightBigg'"}},
+	{"\\(la", NULL, NULL, NULL, NULL,
+		{"\\N'angbracketleft'",
+		 "\\N'angbracketleftbig'", "\\N'angbracketleftBig'",
+		 "\\N'angbracketleftbigg'", "\\N'angbracketleftBigg'"}},
+	{"\\(ra", NULL, NULL, NULL, NULL,
+		{"\\N'angbracketright'",
+		 "\\N'angbracketrightbig'", "\\N'angbracketrightBig'",
+		 "\\N'angbracketrightbigg'", "\\N'angbracketrightBigg'"}},
+	{"|", "\\(br", "\\(br", "\\(br"},
+	{"|", "\\(br", "\\(br", "\\(br"},
+};
+
+static char *sqrt_sizes[8] = {
+	"\\(sr", "\\N'radical'",
+	"\\N'radicalbig'", "\\N'radicalBig'",
+	"\\N'radicalbigg'", "\\N'radicalBigg'",
+};
+
 int def_binop(char *s)
 {
 	int i;
@@ -164,36 +225,24 @@ int def_punc(char *s)
 
 int def_left(char *s)
 {
-	return !s[1] && strchr("[(", s[0]);
+	int i;
+	for (i = 0; i < LEN(bracs); i += 2)
+		if (!strcmp(bracs[i].one, s) && (s[0] != '|' || s[1] != '\0'))
+			return 1;
+	return 0;
 }
 
 int def_right(char *s)
 {
-	return !s[1] && strchr(")]", s[0]);
+	int i;
+	for (i = 1; i < LEN(bracs); i += 2)
+		if (!strcmp(bracs[i].one, s) && (s[0] != '|' || s[1] != '\0'))
+			return 1;
+	return 0;
 }
 
-static struct brac {
-	char *one;
-	char *top;
-	char *mid;
-	char *bot;
-	char *cen;
-} bracs[] = {
-	{"(", "\\(LT", "\\(LX", "\\(LB"},
-	{")", "\\(RT", "\\(RX", "\\(RB"},
-	{"[", "\\(lc", "\\(lx", "\\(lf"},
-	{"]", "\\(rc", "\\(rx", "\\(rf"},
-	{"{", "\\(lt", "\\(bv", "\\(lb", "\\(lk"},
-	{"}", "\\(rt", "\\(bv", "\\(rb", "\\(rk"},
-	{"|", "\\(br", "\\(br", "\\(br"},
-	{"\\(lc", "\\(lc", "\\(lx", "\\(lx"},
-	{"\\(rc", "\\(rc", "\\(rx", "\\(rx"},
-	{"\\(lf", "\\(lx", "\\(lx", "\\(lf"},
-	{"\\(rf", "\\(rx", "\\(rx", "\\(rf"},
-};
-
-/* return the pieces of a bracket; return the single glyph form */
-char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
+/* find the pieces for creating the given bracket */
+void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 {
 	int i;
 	for (i = 0; i < LEN(bracs); i++) {
@@ -202,14 +251,28 @@ char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen)
 			*mid = bracs[i].mid;
 			*bot = bracs[i].bot;
 			*cen = bracs[i].cen;
-			return bracs[i].one;
 		}
 	}
-	*top = sign;
-	*mid = sign;
-	*bot = sign;
-	*cen = NULL;
-	return sign;
+}
+
+/* return different sizes of the given bracket */
+void def_sizes(char *sign, char *sizes[])
+{
+	int i, j;
+	sizes[0] = sign;
+	for (i = 0; i < LEN(bracs); i++)
+		if (!strcmp(bracs[i].one, sign))
+			for (j = 0; bracs[i].sizes[j]; j++)
+				sizes[j + 1] = bracs[i].sizes[j];
+}
+
+/* return sqrt pieces and sizes */
+char **def_sqrtpieces(char **top, char **mid, char **bot)
+{
+	*top = "\\N'radicaltp'";
+	*mid = "\\N'radicalvertex'";
+	*bot = "\\N'radicalbt'";
+	return sqrt_sizes;
 }
 
 /* global variables */

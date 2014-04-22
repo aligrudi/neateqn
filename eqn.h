@@ -73,7 +73,9 @@ int def_relop(char *s);
 int def_punc(char *s);
 int def_left(char *s);
 int def_right(char *s);
-char *def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
+void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
+void def_sizes(char *sign, char *sizes[]);
+char **def_sqrtpieces(char **top, char **mid, char **bot);
 extern char *def_macros[][2];
 
 /* variable length string buffer */

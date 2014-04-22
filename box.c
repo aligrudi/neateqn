@@ -106,6 +106,8 @@ static void box_beforeput(struct box *box, int type)
 	int autogaps;
 	if (box->atoms) {
 		autogaps = eqn_gaps(box, T_ATOM(type));
+		if (!(type & T_ITALIC))
+			box_italiccorrection(box);
 		if (autogaps && type != T_GAP && box->tcur != T_GAP) {
 			box_italiccorrection(box);
 			box_putf(box, "\\h'%du*%sp/100u'",
@@ -135,8 +137,6 @@ void box_puttext(struct box *box, int type, char *s, ...)
 	va_start(ap, s);
 	vsprintf(buf, s, ap);
 	va_end(ap);
-	if (!(type & T_ITALIC))
-		box_italiccorrection(box);
 	box_beforeput(box, type);
 	if (!(box->tcur & T_ITALIC) && (type & T_ITALIC))
 		box_put(box, "\\,");
@@ -149,8 +149,6 @@ void box_merge(struct box *box, struct box *sub)
 {
 	if (box_empty(sub))
 		return;
-	if (!(sub->tbeg & T_ITALIC))
-		box_italiccorrection(box);
 	box_beforeput(box, sub->tbeg);
 	box_toreg(box);
 	box_put(box, box_toreg(sub));
@@ -375,11 +373,11 @@ static void tok_len(char *s, int wd, int len, int ht, int dp)
 {
 	printf(".nr %s 0\\w'%s'\n", nregname(wd), s);
 	if (len)
-		printf(".nr %s 0\\n[bblly]-\\n[bbury]\n", nregname(len));
+		printf(".nr %s 0\\n[bblly]-\\n[bbury]-2\n", nregname(len));
 	if (dp)
-		printf(".nr %s 0\\n[bblly]\n", nregname(dp));
+		printf(".nr %s 0\\n[bblly]-1\n", nregname(dp));
 	if (ht)
-		printf(".nr %s 0-\\n[bbury]\n", nregname(ht));
+		printf(".nr %s 0-\\n[bbury]-1\n", nregname(ht));
 }
 
 /* len[0]: width, len[1]: vertical length, len[2]: height, len[3]: depth */
@@ -481,98 +479,124 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	nregrm(tmp_15d);
 }
 
-static void box_buildbracket(struct box *box, char *brac, int sublen[4])
+/* choose the smallest bracket among br[], large enough for \n(len */
+static void box_bracketsel(int dst, int ht, int dp, char **br, int any)
 {
-	int buildmacro = sregmk();
-	int dst = sregmk();
+	int i;
+	for (i = 0; br[i]; i++) {
+		printf(".if '%s'' ", sreg(dst));
+		printf(".if \\w'%s' ", br[i]);
+		printf(".if (%s+%s)<=((-\\n[bbury]+\\n[bblly])*11/10)) ",
+			nreg(ht), nreg(dp));
+		printf(".ds %s \"%s\n", sregname(dst), br[i]);
+	}
+	/* choose the largest possible bracket, if any is 1 */
+	if (any)
+		while (--i >= 0)
+			printf(".if '%s'' .if \\w'%s' .ds %s \"%s\n",
+				sreg(dst), br[i], sregname(dst), br[i]);
+}
+
+/* build a bracket using the provided pieces */
+static void box_bracketmk(int dst, int len,
+			char *top, char *mid, char *bot, char *cen)
+{
 	int toplen[4];
 	int midlen[4];
 	int botlen[4];
 	int cenlen[4];
-	int onelen[4];
-	int tot_wd = nregmk();
-	int tot_len = nregmk();
-	int mid_cnt = nregmk();
-	int brac_fall = nregmk();
+	int mid_cnt = nregmk();	/* number of mid glyphs to insert */
+	int mid_cur = nregmk();	/* the number of mid glyphs inserted */
 	int cen_pos = nregmk();
-	int sub_max = nregmk();
-	char *one, *top, *mid, *bot, *cen;
-	one = def_pieces(brac, &top, &mid, &bot, &cen);
+	int buildmacro = sregmk();
 	blen_mk(top, toplen);
 	blen_mk(mid, midlen);
 	blen_mk(bot, botlen);
-	blen_mk(one, onelen);
-	roff_max(sub_max, sublen[2], sublen[3]);
 	if (cen)
 		blen_mk(cen, cenlen);
-	sregrm(buildmacro);
 	/* the number of mid tokens necessary to cover sub */
 	if (!cen) {
-		printf(".nr %s %s*2-%s-%s*11/10/%s 1\n",
-			nregname(mid_cnt), nreg(sub_max),
+		printf(".nr %s %s*2-%s-%s*11/10/%s\n",
+			nregname(mid_cnt), nreg(len),
 			nreg(toplen[1]), nreg(botlen[1]), nreg(midlen[1]));
 	} else {	/* for brackets with a center like { */
 		printf(".nr %s %s-(%s+%s+%s/2)*11/10/%s\n",
-			nregname(cen_pos), nreg(sub_max), nreg(cenlen[1]),
+			nregname(cen_pos), nreg(len), nreg(cenlen[1]),
 			nreg(toplen[1]), nreg(botlen[1]), nreg(midlen[1]));
 		printf(".if %s<0 .nr %s 0\n", nreg(cen_pos), nregname(cen_pos));
-		printf(".nr %s 0%s*2 1\n", nregname(mid_cnt), nreg(cen_pos));
+		printf(".nr %s 0%s*2\n", nregname(mid_cnt), nreg(cen_pos));
 	}
 	/* the macro to create the bracket; escaping backslashes */
 	printf(".de %s\n", sregname(buildmacro));
 	if (cen)		/* inserting cen */
 		printf(".if \\%s=\\%s .as %s \"\\v'-\\%su'%s\\h'-\\%su'\\v'-\\%su'\n",
-			nreg(mid_cnt), nreg(cen_pos), sregname(dst),
+			nreg(mid_cur), nreg(cen_pos), sregname(dst),
 			nreg(cenlen[3]), cen, nreg(cenlen[0]), nreg(cenlen[2]));
-	printf(".if \\%s .as %s \"\\v'-\\%su'%s\\h'-\\%su'\\v'-\\%su'\n",
-		nreg(mid_cnt), sregname(dst), nreg(midlen[3]),
+	printf(".if \\%s<\\%s .as %s \"\\v'-\\%su'%s\\h'-\\%su'\\v'-\\%su'\n",
+		nreg(mid_cur), nreg(mid_cnt),
+		sregname(dst), nreg(midlen[3]),
 		mid, nreg(midlen[0]), nreg(midlen[2]));
-	printf(".if \\\\n-%s .%s\n", escarg(nregname(mid_cnt)), sregname(buildmacro));
+	printf(".if \\\\n+%s<\\%s .%s\n",
+		escarg(nregname(mid_cur)), nreg(mid_cnt), sregname(buildmacro));
 	printf("..\n");
-	/* checking to see if it fits in the normal bracket */
-	printf(".ie (%s<=(%s*12/10))&(%s<=(%s*12/10)) \\{\\\n",
-		nreg(sublen[2]), nreg(onelen[2]),
-		nreg(sublen[3]), nreg(onelen[3]));
-	printf(".ds %s \"%s\\h'-%su'\n", sregname(dst), one, nreg(onelen[0]));
-	printf(".nr %s 0\n", nregname(tot_len));
-	printf(".nr %s 0\n", nregname(brac_fall));
-	printf(".nr %s %s \\}\n", nregname(tot_wd), nreg(onelen[0]));
-	/* otherwise, constructing the bracket using top/mid/bot */
-	printf(".el \\{\\\n");
+	/* constructing the bracket */
 	printf(".ds %s \"\\v'-%su'%s\\h'-%su'\\v'-%su'\n",
 		sregname(dst), nreg(botlen[3]),
 		bot, nreg(botlen[0]), nreg(botlen[2]));
+	printf(".nr %s 0 1\n", nregname(mid_cur));
 	printf(".%s\n", sregname(buildmacro));
 	printf(".as %s \"\\v'-%su'%s\\h'-%su'\\v'-%su'\n",
 		sregname(dst), nreg(toplen[3]), top,
 		nreg(toplen[0]), nreg(toplen[2]));
-	/* calculating the total vertical length of the bracket */
-	tok_len(sreg(dst), 0, tot_len, 0, 0);
-	/* calculating the amount the bracket should be moved downwards */
-	printf(".nr %s 0+%su/2u-(%sp*20u/100u)\n",
-		nregname(brac_fall),
-		nreg(tot_len),
-		nreg(box->szreg));
-	printf(".nr %s %s \\}\n", nregname(tot_wd),
-		cen ? nreg(cenlen[0]) : nreg(midlen[0]));
-	/* after the else statement; writing the output */
-	box_putf(box, "\\f[\\n(.f]\\s[\\n(.s]\\v'%su'%s\\v'%su-%su'\\h'%su'",
-		nreg(brac_fall), sreg(dst), nreg(tot_len),
-		nreg(brac_fall), nreg(tot_wd));
-	box_toreg(box);
-	sregrm(dst);
+	/* moving back vertically */
+	printf(".as %s \"\\v'%su*%su+%su+%su+%su'\n",
+		sregname(dst), nreg(mid_cnt), nreg(midlen[1]), nreg(botlen[1]),
+		nreg(toplen[1]), cen ? nreg(cenlen[1]) : "0");
+	/* moving right */
+	printf(".as %s \"\\h'%su'\n",
+		sregname(dst), cen ? nreg(cenlen[0]) : nreg(midlen[0]));
 	blen_rm(toplen);
 	blen_rm(midlen);
 	blen_rm(botlen);
-	blen_rm(onelen);
 	if (cen)
 		blen_rm(cenlen);
-	nregrm(tot_wd);
-	nregrm(tot_len);
 	nregrm(mid_cnt);
-	nregrm(brac_fall);
+	nregrm(mid_cur);
 	nregrm(cen_pos);
-	nregrm(sub_max);
+	sregrm(buildmacro);
+}
+
+static void box_bracket(struct box *box, char *brac, int ht, int dp)
+{
+	char *sizes[8] = {NULL};
+	char *top = NULL, *mid = NULL, *bot = NULL, *cen = NULL;
+	int dst = sregmk();
+	int len = nregmk();
+	int fall = nregmk();
+	int parlen[4];
+	roff_max(len, ht, dp);
+	def_sizes(brac, sizes);
+	printf(".ds %s \"\n", sregname(dst));
+	def_pieces(brac, &top, &mid, &bot, &cen);
+	box_bracketsel(dst, ht, dp, sizes, !mid);
+	if (mid) {
+		printf(".if '%s'' \\{\\\n", sreg(dst));
+		box_bracketmk(dst, len, top, mid, bot, cen);
+		printf(".  \\}\n");
+	}
+	/* calculating the total vertical length of the bracket */
+	blen_mk(sreg(dst), parlen);
+	/* calculating the amount the bracket should be moved downwards */
+	printf(".nr %s 0-%s+%s/2-(%sp*%du/100u)\n", nregname(fall),
+		nreg(parlen[3]), nreg(parlen[2]), nreg(box->szreg), e_axisheight);
+	/* printing the output */
+	box_putf(box, "\\f[\\n(.f]\\s[\\n(.s]\\v'%su'%s\\v'-%su'",
+		nreg(fall), sreg(dst), nreg(fall));
+	box_toreg(box);
+	blen_rm(parlen);
+	sregrm(dst);
+	nregrm(len);
+	nregrm(fall);
 }
 
 static char *bracsign(char *brac, int left)
@@ -581,6 +605,10 @@ static char *bracsign(char *brac, int left)
 		return left ? "\\(lc" : "\\(rc";
 	if (brac[0] == 'f' && !strncmp("floor", brac, strlen(brac)))
 		return left ? "\\(lf" : "\\(rf";
+	if (brac[0] == '<' && brac[1] == '\0')
+		return "\\(la";
+	if (brac[0] == '>' && brac[1] == '\0')
+		return "\\(ra";
 	return brac;
 }
 
@@ -592,20 +620,20 @@ void box_wrap(struct box *box, struct box *sub, char *left, char *right)
 	printf(".ps %s\n", nreg(box->szreg));
 	if (left) {
 		box_beforeput(box, T_LEFT);
-		box_buildbracket(box, bracsign(left, 1), sublen);
+		box_bracket(box, bracsign(left, 1), sublen[2], sublen[3]);
 		box_afterput(box, T_LEFT);
 	}
-	box_putf(box, "%s", box_toreg(sub));
+	box_merge(box, sub);
 	if (right) {
 		box_beforeput(box, T_RIGHT);
-		box_buildbracket(box, bracsign(right, 0), sublen);
+		box_bracket(box, bracsign(right, 0), sublen[2], sublen[3]);
 		box_afterput(box, T_RIGHT);
 	}
 	blen_rm(sublen);
 }
 
-/* construct a radical with height at least ht and width wd in dst register */
-static void sqrt_rad(int dst, int ht, int wd)
+/* construct a radical with height at least len and width wd in dst register */
+static void sqrt_rad(int dst, int len, int wd)
 {
 	int srlen[4];
 	int rnlen[4];
@@ -613,15 +641,36 @@ static void sqrt_rad(int dst, int ht, int wd)
 	int wd_diff = nregmk();		/* if wd is shorter than \(rn */
 	int sr_rx = nregmk();		/* the right-most horizontal position of \(sr */
 	int rn_dx = nregmk();		/* horizontal displacement necessary for \(rn */
+	int len2 = nregmk();
+	int rad = sregmk();
+	char *top = NULL, *mid = NULL, *bot = NULL;
+	char **sizes;
+	printf(".nr %s 0%s/2*11/10\n", nregname(len2), nreg(len));
+	printf(".ds %s \"\n", sregname(rad));
+	/* selecting a radical of the appropriate size */
+	sizes = def_sqrtpieces(&top, &mid, &bot);
+	box_bracketsel(rad, len2, len2, sizes, 0);
+	/* constructing the bracket if needed */
+	if (mid) {
+		printf(".if \\w'%s' ", mid);
+		printf(".if '%s'' \\{\\\n", sreg(rad));
+		box_bracketmk(rad, len2, top, mid, bot, NULL);
+		printf(".  \\}\n");
+	}
+	/* enlarging \(sr if no suitable glyph was found */
+	printf(".if '%s'' \\{\\\n", sreg(rad));
 	blen_mk("\\(sr", srlen);
 	printf(".ie %s<(%s+%s) .nr %s 0\\n(.s\n",
-		nreg(ht), nreg(srlen[2]), nreg(srlen[3]), nregname(sr_sz));
-	printf(".el .nr %s 0%s*\\n(.s/(%s+%s)+1\n",
-		nregname(sr_sz), nreg(ht),
-		nreg(srlen[2]), nreg(srlen[3]));
+		nreg(len), nreg(srlen[2]), nreg(srlen[3]), nregname(sr_sz));
+	printf(".el .nr %s 0%s*\\n(.s/(%s+%s-(%dm/100u))+1\n",
+		nregname(sr_sz), nreg(len),
+		nreg(srlen[2]), nreg(srlen[3]), e_rulethickness);
 	printf(".ps %s\n", nreg(sr_sz));
+	printf(".ds %s \"\\(sr\n", sregname(rad));
 	blen_rm(srlen);
-	blen_mk("\\(sr", srlen);
+	printf(".  \\}\n");
+	/* adding the handle */
+	blen_mk(sreg(rad), srlen);
 	printf(".nr %s \\n[bburx]\n", nregname(sr_rx));
 	blen_mk("\\(rn", rnlen);
 	printf(".nr %s 0%s-\\n[bbllx]-(%dm/100u)\n",
@@ -630,20 +679,21 @@ static void sqrt_rad(int dst, int ht, int wd)
 	printf(".if %s<%s .nr %s 0%s-%s\n",
 		nreg(wd), nreg(rnlen[0]),
 		nregname(wd_diff), nreg(rnlen[0]), nreg(wd));
-	/* output the radical; align the top of \(sr to the baseline */
+	/* output the radical; align the top of the radical to the baseline */
 	printf(".ds %s \"\\s[\\n(.s]\\f[\\n(.f]"
-		"\\v'-%su'\\h'%su'\\l'%su+%su\\(rn'\\h'-%su'\\v'%su'"
-		"\\h'-%su-%su'\\v'%su'\\(sr\\v'-%su'\\h'%su+%su'\n",
+		"\\v'%su'\\h'%su'\\l'%su+%su\\(rn'\\h'-%su'\\v'-%su'"
+		"\\h'-%su-%su'\\v'%su'%s\\v'-%su'\\h'%su+%su'\n",
 		nregname(dst),
-		nreg(rnlen[3]), nreg(rn_dx), nreg(wd), nreg(wd_diff), nreg(rn_dx), nreg(rnlen[3]),
-		nreg(wd), nreg(wd_diff),
-		nreg(srlen[2]), nreg(srlen[2]), nreg(wd), nreg(wd_diff));
+		nreg(rnlen[2]), nreg(rn_dx), nreg(wd), nreg(wd_diff),
+		nreg(rn_dx), nreg(rnlen[2]), nreg(wd), nreg(wd_diff),
+		nreg(srlen[2]), sreg(rad), nreg(srlen[2]), nreg(wd), nreg(wd_diff));
 	blen_rm(srlen);
 	blen_rm(rnlen);
 	nregrm(sr_sz);
 	nregrm(wd_diff);
 	nregrm(sr_rx);
 	nregrm(rn_dx);
+	sregrm(rad);
 }
 
 void box_sqrt(struct box *box, struct box *sub)
@@ -784,7 +834,6 @@ void box_vcenter(struct box *box, struct box *sub)
 	int ht = nregmk();
 	int dp = nregmk();
 	int fall = nregmk();
-	box_italiccorrection(box);
 	box_beforeput(box, sub->tbeg);
 	tok_dim(box_toreg(sub), wd, ht, dp);
 	printf(".nr %s 0-%s+%s/2-(%sp*%du/100u)\n", nregname(fall),
@@ -910,15 +959,15 @@ void box_pile(struct box *box, struct box **pile, int adj, int rowspace)
 	int max_wd = nregmk();
 	int max_ht = nregmk();
 	int n = box_colnrows(pile);
-	box_italiccorrection(box);
 	box_beforeput(box, T_INNER);
 	box_colinit(pile, n, plen, max_wd, max_ht);
 	/* inserting spaces between entries */
-	printf(".nr %s +(%sp*%du/100u)\n",
-		nregname(max_ht), nreg(box->szreg), 20 + rowspace);
 	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
 		nreg(max_ht), nreg(box->szreg), e_baselinesep,
 		nregname(max_ht), nreg(box->szreg), e_baselinesep);
+	if (rowspace)
+		printf(".nr %s +(%sp*%du/100u)\n",
+			nregname(max_ht), nreg(box->szreg), rowspace);
 	/* adding the entries */
 	box_colput(pile, n, box, adj, plen, max_wd, max_ht);
 	box_coldone(pile, n, plen);
@@ -938,7 +987,6 @@ void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES],
 	int max_wd = nregmk();
 	int nrows = 0;
 	int i;
-	box_italiccorrection(box);
 	box_beforeput(box, T_INNER);
 	for (i = 0; i < ncols; i++)
 		if (box_colnrows(cols[i]) > nrows)
@@ -964,11 +1012,12 @@ void box_matrix(struct box *box, int ncols, struct box *cols[][NPILES],
 			nregname(max_ht), nreg(ht[i]));
 	}
 	/* inserting spaces between rows */
-	printf(".nr %s +(%sp*%du/100u)\n",
-		nregname(max_ht), nreg(box->szreg), 20 + rowspace);
 	printf(".if %s<(%sp*%du/100u) .nr %s (%sp*%du/100u)\n",
 		nreg(max_ht), nreg(box->szreg), e_baselinesep,
 		nregname(max_ht), nreg(box->szreg), e_baselinesep);
+	if (rowspace)
+		printf(".nr %s +(%sp*%du/100u)\n",
+			nregname(max_ht), nreg(box->szreg), rowspace);
 	/* printing the columns */
 	for (i = 0; i < ncols; i++) {
 		if (i)		/* space between columns */
