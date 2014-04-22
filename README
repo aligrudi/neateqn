@@ -1,0 +1,17 @@
+NEATEQN
+=======
+
+Neateqn is an eqn preprocessor for neatroff.  It implements most of
+the extensions introduced by Groff's eqn preprocessor.  Neateqn,
+neatroff and neatpost are available at http://litcave.rudi.ir/.
+
+For using Computer Modern font in neateqn for brackets and radicals,
+you first need to create troff font description files for neatroff
+using the mktrfn program (you shall need the Type 1 version of
+Computer Modern, which is available in most TeX distributions).  Then
+you can add these lines in your troff source (assuming the default eqn
+roman font has not been changed with grfont command):
+
+  .fp 11 cmsy10 cmsy10
+  .fp 12 cmex10 cmex10
+  .fspecial R cmsy10 cmex10
