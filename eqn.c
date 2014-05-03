@@ -67,13 +67,13 @@ static char *tok_removequotes(char *s)
 
 static char *tok_improve(char *s)
 {
-	if (s[0] == '-' && s[1] == '\0')
+	if (s && s[0] == '-' && s[1] == '\0')
 		return "\\(mi";
-	if (s[0] == '+' && s[1] == '\0')
+	if (s && s[0] == '+' && s[1] == '\0')
 		return "\\(pl";
-	if (s[0] == '\'' && s[1] == '\0')
+	if (s && s[0] == '\'' && s[1] == '\0')
 		return "\\(fm";
-	return tok_removequotes(s);
+	return s ? tok_removequotes(s) : "";
 }
 
 static int eqn_commands(void)
@@ -287,7 +287,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		printf(".ft %s\n", grfont);
 		box_wrap(box, inner, left[0] ? left : NULL,
 				right[0] ? right : NULL);
-	} else if (tok_get()) {
+	} else if (tok_get() && tok_type() != T_KEYWORD) {
 		if (dx || dy)
 			box_move(box, dy, dx);
 		box_putf(box, "\\s%s", escarg(nreg(sz)));
