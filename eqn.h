@@ -120,7 +120,7 @@ int ts_num(int style);
 /* equations */
 struct box {
 	struct sbuf raw;	/* the contents */
-	int szreg;		/* number register holding box size */
+	int szreg, szown;	/* number register holding box size */
 	int reg;		/* register holding the contents */
 	int atoms;		/* the number of atoms inserted */
 	int tbeg, tcur;		/* type of the first and the last atoms */
@@ -132,7 +132,7 @@ struct box *box_alloc(int szreg, int at_pre, int style);
 void box_free(struct box *box);
 void box_puttext(struct box *box, int type, char *s, ...);
 void box_putf(struct box *box, char *s, ...);
-void box_preputf(struct box *box, char *s, ...);
+int box_size(struct box *box, char *val);
 void box_merge(struct box *box, struct box *sub);
 void box_sub(struct box *box, struct box *sub, struct box *sup);
 void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ulim);

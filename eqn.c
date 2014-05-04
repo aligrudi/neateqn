@@ -247,7 +247,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		} else if (!tok_jmp("font")) {
 			strcpy(fn, tok_poptext(1));
 		} else if (!tok_jmp("size")) {
-			printf(".nr %s %s\n", nregname(sz), tok_poptext(1));
+			sz = box_size(box, tok_poptext(1));
 		} else if (!tok_jmp("fwd")) {
 			dx += atoi(tok_poptext(1));
 		} else if (!tok_jmp("back")) {

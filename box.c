@@ -21,6 +21,8 @@ void box_free(struct box *box)
 {
 	if (box->reg)
 		sregrm(box->reg);
+	if (box->szown)
+		nregrm(box->szreg);
 	sbuf_done(&box->raw);
 	free(box);
 }
@@ -45,6 +47,23 @@ void box_putf(struct box *box, char *s, ...)
 char *box_buf(struct box *box)
 {
 	return sbuf_buf(&box->raw);
+}
+
+/* change box's point size; return the number register storing it */
+int box_size(struct box *box, char *val)
+{
+	int szreg = box->szreg;
+	if (!val || !*val)
+		return szreg;
+	if (!box->szown) {
+		box->szown = 1;
+		box->szreg = nregmk();
+	}
+	if (val[0] == '-' || val[0] == '+')
+		printf(".nr %s %s%s\n", nregname(box->szreg), nreg(szreg), val);
+	else
+		printf(".nr %s %s\n", nregname(box->szreg), val);
+	return box->szreg;
 }
 
 void box_move(struct box *box, int dy, int dx)
@@ -519,6 +538,7 @@ static void box_bracketmk(int dst, int len,
 		printf(".nr %s %s*2-%s-%s*11/10/%s\n",
 			nregname(mid_cnt), nreg(len),
 			nreg(toplen[1]), nreg(botlen[1]), nreg(midlen[1]));
+		printf(".if %s<0 .nr %s 0\n", nreg(mid_cnt), nregname(mid_cnt));
 	} else {	/* for brackets with a center like { */
 		printf(".nr %s %s-(%s+%s+%s/2)*11/10/%s\n",
 			nregname(cen_pos), nreg(len), nreg(cenlen[1]),
