@@ -498,19 +498,24 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	nregrm(tmp_15d);
 }
 
-/* choose the smallest bracket among br[], large enough for \n(len */
-static void box_bracketsel(int dst, int ht, int dp, char **br, int any)
+/* choose the smallest bracket among br[], large enough for \n(ht+\n(dp */
+static void box_bracketsel(int dst, int ht, int dp, char **br, int any, int both)
 {
 	int i;
 	for (i = 0; br[i]; i++) {
 		printf(".if '%s'' ", sreg(dst));
-		printf(".if \\w'%s' ", br[i]);
-		printf(".if (%s+%s)<=((-\\n[bbury]+\\n[bblly])*11/10)) ",
-			nreg(ht), nreg(dp));
+		printf(".if \\w'%s' ", br[i]);	/* is this bracket available? */
+		if (both) {	/* check both the height and the depth */
+			printf(".if (%s-(%dm/100)*2)<=(-\\n[bbury]+\\n[bblly]+(%dm/100*2)) ",
+				nreg(ht), e_rulethickness, e_axisheight);
+			printf(".if (%s*2)<=(-\\n[bbury]+\\n[bblly]-(%dm/100*2)) ",
+				nreg(dp), e_axisheight);
+		} else {
+			printf(".if (%s+%s)<=(-\\n[bbury]+\\n[bblly]) ", nreg(ht), nreg(dp));
+		}
 		printf(".ds %s \"%s\n", sregname(dst), br[i]);
 	}
-	/* choose the largest possible bracket, if any is 1 */
-	if (any)
+	if (any)		/* choose the largest bracket, if any is 1 */
 		while (--i >= 0)
 			printf(".if '%s'' .if \\w'%s' .ds %s \"%s\n",
 				sreg(dst), br[i], sregname(dst), br[i]);
@@ -598,7 +603,7 @@ static void box_bracket(struct box *box, char *brac, int ht, int dp)
 	def_sizes(brac, sizes);
 	printf(".ds %s \"\n", sregname(dst));
 	def_pieces(brac, &top, &mid, &bot, &cen);
-	box_bracketsel(dst, ht, dp, sizes, !mid);
+	box_bracketsel(dst, ht, dp, sizes, !mid, 1);
 	if (mid) {
 		printf(".if '%s'' \\{\\\n", sreg(dst));
 		box_bracketmk(dst, len, top, mid, bot, cen);
@@ -669,7 +674,7 @@ static void sqrt_rad(int dst, int len, int wd)
 	printf(".ds %s \"\n", sregname(rad));
 	/* selecting a radical of the appropriate size */
 	sizes = def_sqrtpieces(&top, &mid, &bot);
-	box_bracketsel(rad, len2, len2, sizes, 0);
+	box_bracketsel(rad, len2, len2, sizes, 0, 0);
 	/* constructing the bracket if needed */
 	if (mid) {
 		printf(".if \\w'%s' ", mid);
