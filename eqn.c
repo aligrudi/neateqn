@@ -432,6 +432,7 @@ int main(void)
 			sprintf(eqnblk, "%s%s", eqn_lineup, box_toreg(box));
 			tok_eqnout(eqnblk);
 		}
+		printf(".lf %d\n", in_lineget());
 		eqn_lineup[0] = '\0';
 		nregrm(eqn_lineupreg);
 		box_free(box);

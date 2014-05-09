@@ -20,6 +20,7 @@ struct ein {
 
 static struct ein ein_stdin;	/* the default input stream */
 static struct ein *ein = &ein_stdin;
+static int lineno = 1;		/* current line number */
 
 static char *in_strdup(char *s)
 {
@@ -57,6 +58,14 @@ static void in_pop(void)
 	}
 }
 
+static int in_stdin(void)
+{
+	int c = fgetc(stdin);
+	if (c == '\n')
+		lineno++;
+	return c;
+}
+
 /* read the next character */
 int in_next(void)
 {
@@ -64,7 +73,7 @@ int in_next(void)
 		if (ein->uncnt)
 			return ein->unbuf[--ein->uncnt];
 		if (!ein->prev)
-			return fgetc(stdin);
+			return in_stdin();
 		if (ein->buf[ein->pos])
 			return ein->buf[ein->pos++];
 		in_pop();
@@ -77,6 +86,16 @@ void in_back(int c)
 {
 	if (c > 0)
 		ein->unbuf[ein->uncnt++] = c;
+}
+
+int in_lineget(void)
+{
+	return lineno;
+}
+
+void in_lineset(int n)
+{
+	lineno = n;
 }
 
 /* eqn macros */

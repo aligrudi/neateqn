@@ -68,9 +68,25 @@ static int tok_eq(char *s)
 {
 	if (*s++ != '.')
 		return 0;
-	while (isspace(*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	return s[0] == 'E' && s[1] == 'Q';
+}
+
+/* read an lf request */
+static int tok_lf(char *s)
+{
+	if (*s++ != '.')
+		return 0;
+	while (isspace((unsigned char) *s))
+		s++;
+	if (*s++ != 'l' || *s++ != 'f')
+		return 0;
+	while (isspace((unsigned char) *s))
+		s++;
+	if (isdigit((unsigned char) *s))
+		in_lineset(atoi(s));
+	return 1;
 }
 
 /* read the next input character */
@@ -198,6 +214,7 @@ int tok_eqn(void)
 		}
 		if (c == '\n' && !tok_part) {
 			printf("%s", ln);
+			tok_lf(ln);
 			if (tok_eq(ln) && !tok_en()) {
 				tok_eqen = 1;
 				return 0;
@@ -206,6 +223,7 @@ int tok_eqn(void)
 		if (c == '\n' && tok_part) {
 			printf(".ps \\n%s\n", escarg(EQNSZ));
 			printf(".ft \\n%s\n", escarg(EQNFN));
+			printf(".lf %d\n", in_lineget());
 			printf("\\*%s%s", escarg(EQNS), ln);
 			tok_part = 0;
 		}
@@ -216,11 +234,13 @@ int tok_eqn(void)
 /* collect the output of this eqn block */
 void tok_eqnout(char *s)
 {
-	if (!tok_part)
-		printf(".ds %s \"%s%s\n\\&\\*%s\n",
-			EQNS, s, ERESTORE, escarg(EQNS));
-	else
+	if (!tok_part) {
+		printf(".ds %s \"%s%s\n", EQNS, s, ERESTORE);
+		printf(".lf %d\n", in_lineget() - 1);
+		printf("\\&\\*%s\n", escarg(EQNS));
+	} else {
 		printf(".as %s \"%s%s\n", EQNS, s, ERESTORE);
+	}
 }
 
 /* return the length of a utf-8 character based on its first byte */
