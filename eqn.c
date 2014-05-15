@@ -431,6 +431,8 @@ int main(void)
 		if (!box_empty(box)) {
 			sprintf(eqnblk, "%s%s", eqn_lineup, box_toreg(box));
 			tok_eqnout(eqnblk);
+			printf(".ps \\n%s\n", escarg(EQNSZ));
+			printf(".ft \\n%s\n", escarg(EQNFN));
 		}
 		printf(".lf %d\n", in_lineget());
 		eqn_lineup[0] = '\0';

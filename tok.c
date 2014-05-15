@@ -221,8 +221,6 @@ int tok_eqn(void)
 			}
 		}
 		if (c == '\n' && tok_part) {
-			printf(".ps \\n%s\n", escarg(EQNSZ));
-			printf(".ft \\n%s\n", escarg(EQNFN));
 			printf(".lf %d\n", in_lineget());
 			printf("\\*%s%s", escarg(EQNS), ln);
 			tok_part = 0;
