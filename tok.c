@@ -8,7 +8,8 @@
 #define T_BIN(c1, c2)		(((c1) << 8) | (c2))
 #define T_SEP			"^~{}\"\n\t "
 #define T_SOFTSEP		(T_SEP "=:|.+-*/\\,()[]<>!")
-#define ERESTORE		"\\s[\\n[" EQNSZ "]]\\f[\\n[" EQNFN "]]"
+#define ESAVE		"\\R'" EQNFN "0 \\En(.f'\\R'" EQNSZ "0 \\En(.s'"
+#define ELOAD		"\\f[\\En[" EQNFN "0]]\\s[\\En[" EQNSZ "0]]"
 
 static char *kwds[] = {
 	"fwd", "down", "back", "up",
@@ -233,11 +234,11 @@ int tok_eqn(void)
 void tok_eqnout(char *s)
 {
 	if (!tok_part) {
-		printf(".ds %s \"%s%s\n", EQNS, s, ERESTORE);
+		printf(".ds %s \"%s%s%s\n", EQNS, ESAVE, s, ELOAD);
 		printf(".lf %d\n", in_lineget() - 1);
 		printf("\\&\\*%s\n", escarg(EQNS));
 	} else {
-		printf(".as %s \"%s%s\n", EQNS, s, ERESTORE);
+		printf(".as %s \"%s%s%s\n", EQNS, ESAVE, s, ELOAD);
 	}
 }
 
