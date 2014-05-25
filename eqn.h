@@ -64,7 +64,7 @@ char *tok_pop(void);
 char *tok_poptext(int sep);
 int tok_jmp(char *kwd);
 int tok_type(void);
-int tok_sep(void);
+int tok_sep(int soft);
 void tok_delim(void);
 void tok_macro(void);
 int tok_inline(void);

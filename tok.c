@@ -407,10 +407,10 @@ int tok_type(void)
 }
 
 /* return nonzero if current token is a separator */
-int tok_sep(void)
+int tok_sep(int soft)
 {
-	return !tok_get() || strchr(T_SEP, (unsigned char) tok_get()[0]) ||
-		tok_curtype == T_KEYWORD;
+	return !tok_get() || tok_curtype == T_KEYWORD ||
+		strchr(soft ? T_SOFTSEP : T_SEP, (unsigned char) tok_get()[0]);
 }
 
 /* read the next token, return the previous */
@@ -430,7 +430,7 @@ char *tok_poptext(int sep)
 	do {
 		strcat(tok_prev, tok);
 		tok_read();
-	} while (tok[0] && (sep && !tok_sep()));
+	} while (tok[0] && !tok_sep(!sep));
 	return tok_prev[0] ? tok_prev : NULL;
 }
 
