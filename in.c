@@ -157,3 +157,9 @@ int in_arg(int i)
 		in_push(ein->args[i - 1], NULL);
 	return call ? 0 : 1;
 }
+
+/* return one if not reading macros and their arguments */
+int in_top(void)
+{
+	return !ein->prev;
+}

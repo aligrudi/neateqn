@@ -99,7 +99,7 @@ static int tok_next(void)
 	c = in_next();
 	if (tok_eqen && c == '\n' && tok_en())
 		tok_eqen = 0;
-	if (tok_line && c == eqn_end) {
+	if (tok_line && (in_top() && c == eqn_end)) {
 		tok_line = 0;
 		return 0;
 	}
@@ -118,7 +118,8 @@ static void tok_preview(char *s)
 {
 	int c = in_next();
 	int n = 0;
-	while (c > 0 && !strchr(T_SEP, c) && (!tok_line || c != eqn_end)) {
+	while (c > 0 && !strchr(T_SEP, c) &&
+			(!tok_line || (!in_top() || c != eqn_end))) {
 		s[n++] = c;
 		c = in_next();
 	}

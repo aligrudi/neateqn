@@ -53,6 +53,7 @@ void in_define(char *name, char *def);
 int in_expand(char *name, char **args);
 int in_macrocall(char *name);
 int in_arg(int i);
+int in_top(void);
 int in_lineget(void);
 void in_lineset(int n);
 
