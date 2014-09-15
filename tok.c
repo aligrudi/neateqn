@@ -369,7 +369,6 @@ static int tok_read(void)
 			case T_BIN('>', '='):
 			case T_BIN('=', '='):
 			case T_BIN('!', '='):
-			case T_BIN('~', '='):
 			case T_BIN('>', '>'):
 			case T_BIN('<', '<'):
 			case T_BIN(':', '='):
