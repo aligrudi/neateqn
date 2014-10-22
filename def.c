@@ -304,8 +304,8 @@ int e_bigopspacing4 = 60;
 int e_bigopspacing5 = 10;
 int e_columnsep = 100;
 int e_baselinesep = 140;
-int e_bodyheight = 85;
-int e_bodydepth = 35;
+int e_bodyheight = 70;
+int e_bodydepth = 25;
 
 static struct gvar {
 	char *name;
