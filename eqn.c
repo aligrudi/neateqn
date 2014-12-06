@@ -76,6 +76,35 @@ static char *tok_improve(char *s)
 	return s ? tok_removequotes(s) : "";
 }
 
+static void eqn_bracketsizes(void)
+{
+	char sign[BRLEN];
+	char bufs[NSIZES][BRLEN];
+	char *sizes[NSIZES] = {NULL};
+	int n, i;
+	snprintf(sign, sizeof(sign), "%s", tok_improve(tok_poptext(1)));
+	n = atoi(tok_poptext(1));
+	for (i = 0; i < n; i++) {
+		char *size = tok_improve(tok_poptext(1));
+		if (i < NSIZES) {
+			snprintf(bufs[i], sizeof(bufs[i]), "%s", size);
+			sizes[i] = bufs[i];
+		}
+	}
+	def_sizesput(sign, sizes);
+}
+
+static void eqn_bracketpieces(void)
+{
+	char sign[BRLEN], top[BRLEN], mid[BRLEN], bot[BRLEN], cen[BRLEN];
+	snprintf(sign, sizeof(sign), "%s", tok_improve(tok_poptext(1)));
+	snprintf(top, sizeof(top), "%s", tok_improve(tok_poptext(1)));
+	snprintf(mid, sizeof(mid), "%s", tok_improve(tok_poptext(1)));
+	snprintf(bot, sizeof(bot), "%s", tok_improve(tok_poptext(1)));
+	snprintf(cen, sizeof(cen), "%s", tok_improve(tok_poptext(1)));
+	def_piecesput(sign, top, mid, bot, cen);
+}
+
 static int eqn_commands(void)
 {
 	char var[LNLEN];
@@ -111,6 +140,14 @@ static int eqn_commands(void)
 	if (!tok_jmp("set")) {
 		strcpy(var, tok_poptext(1));
 		def_set(var, atoi(tok_poptext(1)));
+		return 0;
+	}
+	if (!tok_jmp("bracketsizes")) {
+		eqn_bracketsizes();
+		return 0;
+	}
+	if (!tok_jmp("bracketpieces")) {
+		eqn_bracketpieces();
 		return 0;
 	}
 	return 1;

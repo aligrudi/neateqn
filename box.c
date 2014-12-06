@@ -593,7 +593,7 @@ static void box_bracketmk(int dst, int len,
 
 static void box_bracket(struct box *box, char *brac, int ht, int dp)
 {
-	char *sizes[8] = {NULL};
+	char *sizes[NSIZES] = {NULL};
 	char *top = NULL, *mid = NULL, *bot = NULL, *cen = NULL;
 	int dst = sregmk();
 	int len = nregmk();
@@ -660,6 +660,7 @@ void box_wrap(struct box *box, struct box *sub, char *left, char *right)
 /* construct a radical with height at least len and width wd in dst register */
 static void sqrt_rad(int dst, int len, int wd)
 {
+	char *sizes[NSIZES] = {NULL};
 	int srlen[4];
 	int rnlen[4];
 	int sr_sz = nregmk();
@@ -668,12 +669,12 @@ static void sqrt_rad(int dst, int len, int wd)
 	int rn_dx = nregmk();		/* horizontal displacement necessary for \(rn */
 	int len2 = nregmk();
 	int rad = sregmk();
-	char *top = NULL, *mid = NULL, *bot = NULL;
-	char **sizes;
+	char *top = NULL, *mid = NULL, *bot = NULL, *cen;
 	printf(".nr %s 0%s/2*11/10\n", nregname(len2), nreg(len));
 	printf(".ds %s \"\n", sregname(rad));
 	/* selecting a radical of the appropriate size */
-	sizes = def_sqrtpieces(&top, &mid, &bot);
+	def_pieces("\\(sr", &top, &mid, &bot, &cen);
+	def_sizes("\\(sr", sizes);
 	box_bracketsel(rad, len2, len2, sizes, 0, 0);
 	/* constructing the bracket if needed */
 	if (mid) {

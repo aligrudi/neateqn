@@ -4,6 +4,8 @@
 #define NMLEN		32	/* macro name length */
 #define RLEN		8	/* register name length */
 #define NPILES		32	/* number of piled items */
+#define NSIZES		8	/* number of bracket sizes */
+#define BRLEN		64	/* bracket definition length */
 
 /* registers used by neateqn */
 #define EQNSZ		".eqnsz"	/* register for surrounding point size */
@@ -78,7 +80,8 @@ int def_left(char *s);
 int def_right(char *s);
 void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
 void def_sizes(char *sign, char *sizes[]);
-char **def_sqrtpieces(char **top, char **mid, char **bot);
+void def_piecesput(char *sign, char *top, char *mid, char *bot, char *cen);
+void def_sizesput(char *sign, char *sizes[]);
 extern char *def_macros[][2];
 
 /* variable length string buffer */
