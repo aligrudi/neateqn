@@ -58,6 +58,7 @@ int in_arg(int i);
 int in_top(void);
 int in_lineget(void);
 void in_lineset(int n);
+void in_done(void);
 
 /* tokenizer */
 int tok_eqn(void);

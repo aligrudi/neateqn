@@ -324,6 +324,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		printf(".ft %s\n", grfont);
 		box_wrap(box, inner, left[0] ? left : NULL,
 				right[0] ? right : NULL);
+		box_free(inner);
 	} else if (tok_get() && tok_type() != T_KEYWORD) {
 		if (dx || dy)
 			box_move(box, dy, dx);
@@ -476,5 +477,6 @@ int main(void)
 		nregrm(eqn_lineupreg);
 		box_free(box);
 	}
+	in_done();
 	return 0;
 }

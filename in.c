@@ -128,6 +128,13 @@ void in_define(char *name, char *def)
 	}
 }
 
+void in_done(void)
+{
+	int i;
+	for (i = 0; i < nmacros; i++)
+		free(macros[i].def);
+}
+
 /* see if name starts with a macro name followed by a '(' */
 int in_macrocall(char *name)
 {
