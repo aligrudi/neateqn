@@ -1,3 +1,4 @@
+/* predefined array sizes */
 #define FNLEN		32	/* font name length */
 #define SZLEN		32	/* point size length */
 #define LNLEN		1000	/* line length */
@@ -5,6 +6,7 @@
 #define RLEN		8	/* register name length */
 #define NPILES		32	/* number of piled items */
 #define NSIZES		8	/* number of bracket sizes */
+#define GNLEN		32	/* glyph name length */
 #define BRLEN		64	/* bracket definition length */
 
 /* registers used by neateqn */
@@ -74,11 +76,8 @@ void tok_macro(void);
 int tok_inline(void);
 
 /* default definitions and operators */
-int def_binop(char *s);
-int def_relop(char *s);
-int def_punc(char *s);
-int def_left(char *s);
-int def_right(char *s);
+int def_type(char *s);
+void def_typeput(char *s, int type);
 void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
 void def_sizes(char *sign, char *sizes[]);
 void def_piecesput(char *sign, char *top, char *mid, char *bot, char *cen);

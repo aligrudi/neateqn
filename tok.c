@@ -20,7 +20,7 @@ static char *kwds[] = {
 	"pile", "lpile", "cpile", "rpile", "above",
 	"matrix", "col", "ccol", "lcol", "rcol",
 	"delim", "define",
-	"gfont", "grfont", "gbfont", "gsize", "set",
+	"gfont", "grfont", "gbfont", "gsize", "set", "settype",
 	"mark", "lineup", "bracketsizes", "bracketpieces",
 };
 
@@ -265,20 +265,13 @@ static int utf8len(int c)
 static int char_type(char *s)
 {
 	int c = (unsigned char) s[0];
+	int t;
 	if (isdigit(c))
 		return T_NUMBER;
 	if (c == '"')
 		return T_STRING;
-	if (def_punc(s))
-		return T_PUNC;
-	if (def_binop(s))
-		return T_BINOP;
-	if (def_relop(s))
-		return T_RELOP;
-	if (def_left(s))
-		return T_LEFT;
-	if (def_right(s))
-		return T_RIGHT;
+	if ((t = def_type(s)) >= 0)
+		return t;
 	if (c == '~' || c == '^')
 		return T_GAP;
 	if (ispunct(c) && (c != '\\' || !s[1]))

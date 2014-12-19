@@ -140,6 +140,13 @@ static char *relops[] = {
 	"↓", "\\(da",
 };
 
+/* list of punctuations */
+static char *puncs[] = {".", ",", ";", ":", "!"};
+
+/* left and right brackets */
+static char *bracketleft[] = {"(", "[", "{", "\\(lc", "\\(lf", "\\(la"};
+static char *bracketright[] = {")", "]", "}", "\\(rc", "\\(rf", "\\(ra"};
+
 /* glyphs for different bracket sizes */
 static char bracketsizes[32][NSIZES][BRLEN] = {
 	{"(", "(", "\\N'parenleftbig'", "\\N'parenleftBig'",
@@ -187,48 +194,51 @@ static char bracketpieces[32][8][BRLEN] = {
 	{"\\(sr", "\\N'radicaltp'", "\\N'radicalvertex'", "\\N'radicalbt'"},
 };
 
-static char *bracketleft[] = {"(", "[", "{", "\\(lc", "\\(lf", "\\(la"};
-static char *bracketright[] = {")", "]", "}", "\\(rc", "\\(rf", "\\(ra"};
+/* custom glyph types */
+static struct gtype {
+	char g[GNLEN];
+	int type;
+} gtypes[128];
 
-int def_binop(char *s)
+void def_typeput(char *s, int type)
 {
 	int i;
-	for (i = 0; i < LEN(binops); i++)
-		if (!strcmp(binops[i], s))
-			return 1;
-	return 0;
+	for (i = 0; i < LEN(gtypes) && gtypes[i].g[0]; i++)
+		if (!strcmp(s, gtypes[i].g))
+			break;
+	if (i < LEN(gtypes)) {
+		strcpy(gtypes[i].g, s);
+		gtypes[i].type = type;
+	}
 }
 
-int def_relop(char *s)
+/* find an entry in an array */
+static char *alookup(char **a, int len, char *s)
 {
 	int i;
-	for (i = 0; i < LEN(relops); i++)
-		if (!strcmp(relops[i], s))
-			return 1;
-	return 0;
+	for (i = 0; i < len; i++)
+		if (!strcmp(s, a[i]))
+			return a[i];
+	return NULL;
 }
 
-int def_punc(char *s)
-{
-	return !s[1] && strchr(".,;:!", s[0]);
-}
-
-int def_left(char *s)
+int def_type(char *s)
 {
 	int i;
-	for (i = 0; i < LEN(bracketleft); i++)
-		if (!strcmp(bracketleft[i], s))
-			return 1;
-	return 0;
-}
-
-int def_right(char *s)
-{
-	int i;
-	for (i = 0; i < LEN(bracketright); i++)
-		if (!strcmp(bracketright[i], s))
-			return 1;
-	return 0;
+	for (i = 0; i < LEN(gtypes) && gtypes[i].g[0]; i++)
+		if (!strcmp(s, gtypes[i].g))
+			return gtypes[i].type;
+	if (alookup(puncs, LEN(puncs), s))
+		return T_PUNC;
+	if (alookup(binops, LEN(binops), s))
+		return T_BINOP;
+	if (alookup(relops, LEN(relops), s))
+		return T_RELOP;
+	if (alookup(bracketleft, LEN(bracketleft), s))
+		return T_LEFT;
+	if (alookup(bracketright, LEN(bracketright), s))
+		return T_RIGHT;
+	return -1;
 }
 
 static int pieces_find(char *sign)

@@ -56,13 +56,13 @@ static void sizesub(int dst, int src, int style, int src_style)
 	}
 }
 
-static char *tok_removequotes(char *s)
+static char *tok_quotes(char *s)
 {
-	if (s[0] == '"') {
+	if (s && s[0] == '"') {
 		s[strlen(s) - 1] = '\0';
 		return s + 1;
 	}
-	return s;
+	return s ? s : "";
 }
 
 static char *tok_improve(char *s)
@@ -73,7 +73,7 @@ static char *tok_improve(char *s)
 		return "\\(pl";
 	if (s && s[0] == '\'' && s[1] == '\0')
 		return "\\(fm";
-	return s ? tok_removequotes(s) : "";
+	return tok_quotes(s);
 }
 
 static void eqn_bracketsizes(void)
@@ -82,10 +82,10 @@ static void eqn_bracketsizes(void)
 	char bufs[NSIZES][BRLEN];
 	char *sizes[NSIZES] = {NULL};
 	int n, i;
-	snprintf(sign, sizeof(sign), "%s", tok_improve(tok_poptext(1)));
+	snprintf(sign, sizeof(sign), "%s", tok_quotes(tok_poptext(1)));
 	n = atoi(tok_poptext(1));
 	for (i = 0; i < n; i++) {
-		char *size = tok_improve(tok_poptext(1));
+		char *size = tok_quotes(tok_poptext(1));
 		if (i < NSIZES) {
 			snprintf(bufs[i], sizeof(bufs[i]), "%s", size);
 			sizes[i] = bufs[i];
@@ -97,12 +97,42 @@ static void eqn_bracketsizes(void)
 static void eqn_bracketpieces(void)
 {
 	char sign[BRLEN], top[BRLEN], mid[BRLEN], bot[BRLEN], cen[BRLEN];
-	snprintf(sign, sizeof(sign), "%s", tok_improve(tok_poptext(1)));
-	snprintf(top, sizeof(top), "%s", tok_improve(tok_poptext(1)));
-	snprintf(mid, sizeof(mid), "%s", tok_improve(tok_poptext(1)));
-	snprintf(bot, sizeof(bot), "%s", tok_improve(tok_poptext(1)));
-	snprintf(cen, sizeof(cen), "%s", tok_improve(tok_poptext(1)));
+	snprintf(sign, sizeof(sign), "%s", tok_quotes(tok_poptext(1)));
+	snprintf(top, sizeof(top), "%s", tok_quotes(tok_poptext(1)));
+	snprintf(mid, sizeof(mid), "%s", tok_quotes(tok_poptext(1)));
+	snprintf(bot, sizeof(bot), "%s", tok_quotes(tok_poptext(1)));
+	snprintf(cen, sizeof(cen), "%s", tok_quotes(tok_poptext(1)));
 	def_piecesput(sign, top, mid, bot, cen);
+}
+
+static int typenum(char *s)
+{
+	if (!strcmp("ord", s) || !strcmp("ordinary", s))
+		return T_ORD;
+	if (!strcmp("op", s) || !strcmp("operator", s))
+		return T_BIGOP;
+	if (!strcmp("bin", s) || !strcmp("binary", s))
+		return T_BINOP;
+	if (!strcmp("rel", s) || !strcmp("relation", s))
+		return T_RELOP;
+	if (!strcmp("open", s) || !strcmp("opening", s))
+		return T_LEFT;
+	if (!strcmp("close", s) || !strcmp("closing", s))
+		return T_RIGHT;
+	if (!strcmp("punct", s) || !strcmp("punctuation", s))
+		return T_PUNC;
+	if (!strcmp("inner", s) || !strcmp("inner", s))
+		return T_INNER;
+	return T_ORD;
+}
+
+static void eqn_settype(void)
+{
+	char gl[GNLEN], type[NMLEN];
+	snprintf(type, sizeof(type), "%s", tok_quotes(tok_poptext(1)));
+	snprintf(gl, sizeof(gl), "%s", tok_quotes(tok_poptext(1)));
+	if (typenum(type) >= 0)
+		def_typeput(gl, typenum(type));
 }
 
 static int eqn_commands(void)
@@ -118,19 +148,19 @@ static int eqn_commands(void)
 		return 0;
 	}
 	if (!tok_jmp("gfont")) {
-		strcpy(gfont, tok_removequotes(tok_poptext(1)));
+		strcpy(gfont, tok_quotes(tok_poptext(1)));
 		return 0;
 	}
 	if (!tok_jmp("grfont")) {
-		strcpy(grfont, tok_removequotes(tok_poptext(1)));
+		strcpy(grfont, tok_quotes(tok_poptext(1)));
 		return 0;
 	}
 	if (!tok_jmp("gbfont")) {
-		strcpy(gbfont, tok_removequotes(tok_poptext(1)));
+		strcpy(gbfont, tok_quotes(tok_poptext(1)));
 		return 0;
 	}
 	if (!tok_jmp("gsize")) {
-		sz = tok_removequotes(tok_poptext(1));
+		sz = tok_quotes(tok_poptext(1));
 		if (sz[0] == '-' || sz[0] == '+')
 			sprintf(gsize, "\\n%s%s", escarg(EQNSZ), sz);
 		else
@@ -148,6 +178,10 @@ static int eqn_commands(void)
 	}
 	if (!tok_jmp("bracketpieces")) {
 		eqn_bracketpieces();
+		return 0;
+	}
+	if (!tok_jmp("settype")) {
+		eqn_settype();
 		return 0;
 	}
 	return 1;
@@ -318,9 +352,9 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		eqn_boxuntil(box, sz, fn, "}");
 	} else if (!tok_jmp("left")) {
 		inner = box_alloc(sz, 0, style);
-		snprintf(left, sizeof(left), "%s", tok_improve(tok_poptext(0)));
+		snprintf(left, sizeof(left), "%s", tok_quotes(tok_poptext(0)));
 		eqn_boxuntil(inner, sz, fn, "right");
-		snprintf(right, sizeof(right), "%s", tok_improve(tok_poptext(0)));
+		snprintf(right, sizeof(right), "%s", tok_quotes(tok_poptext(0)));
 		printf(".ft %s\n", grfont);
 		box_wrap(box, inner, left[0] ? left : NULL,
 				right[0] ? right : NULL);
