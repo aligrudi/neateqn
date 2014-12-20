@@ -20,7 +20,7 @@ static char *kwds[] = {
 	"pile", "lpile", "cpile", "rpile", "above",
 	"matrix", "col", "ccol", "lcol", "rcol",
 	"delim", "define",
-	"gfont", "grfont", "gbfont", "gsize", "set", "settype",
+	"gfont", "grfont", "gbfont", "gsize", "set", "chartype",
 	"mark", "lineup", "bracketsizes", "bracketpieces",
 };
 

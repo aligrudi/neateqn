@@ -126,7 +126,7 @@ static int typenum(char *s)
 	return T_ORD;
 }
 
-static void eqn_settype(void)
+static void eqn_chartype(void)
 {
 	char gl[GNLEN], type[NMLEN];
 	snprintf(type, sizeof(type), "%s", tok_quotes(tok_poptext(1)));
@@ -180,8 +180,8 @@ static int eqn_commands(void)
 		eqn_bracketpieces();
 		return 0;
 	}
-	if (!tok_jmp("settype")) {
-		eqn_settype();
+	if (!tok_jmp("chartype")) {
+		eqn_chartype();
 		return 0;
 	}
 	return 1;
