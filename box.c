@@ -221,6 +221,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	int sup_rise = nregmk();
 	int sub_fall = nregmk();
 	int tmp_18e = nregmk();
+	int sub_cor = nregmk();
 	if (sub)
 		box_italiccorrection(sub);
 	if (sup)
@@ -289,10 +290,11 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	/* writing the subscript */
 	if (sub) {
 		/* subscript correction */
-		printf(".nr %s -(%s-%s)/2\n", nregname(sub_wd),
-			nreg(box_wd), nreg(box_wdnoic));
-		box_putf(box, "\\h'-(%su-%su)/2u'",
-			nreg(box_wd), nreg(box_wdnoic));
+		printf(".nr %s (%s+%s)*(%s-%s)/%s\n", nregname(sub_cor),
+			nreg(box_ht), nreg(sub_fall),
+			nreg(box_wd), nreg(box_wdnoic), nreg(box_ht));
+		printf(".nr %s -%s\n", nregname(sub_wd), nreg(sub_cor));
+		box_putf(box, "\\h'-%su'", nreg(sub_cor));
 		box_putf(box, "\\v'%su'%s\\v'-%su'",
 			nreg(sub_fall), box_toreg(sub), nreg(sub_fall));
 		if (sup) {
@@ -314,6 +316,7 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	nregrm(sup_rise);
 	nregrm(sub_fall);
 	nregrm(tmp_18e);
+	nregrm(sub_cor);
 }
 
 void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ulim)
