@@ -1,7 +1,7 @@
 /*
  * neateqn preprocessor of neatroff
  *
- * Copyright (C) 2014 Ali Gholami Rudi <ali at rudi dot ir>
+ * Copyright (C) 2014-2015 Ali Gholami Rudi <ali at rudi dot ir>
  *
  * This program is released under the Modified BSD license.
  */
