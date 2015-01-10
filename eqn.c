@@ -11,8 +11,6 @@
 #include <string.h>
 #include "eqn.h"
 
-#define FN2(fn)	((!(fn)[1] && ((fn)[0] == 'I' || (fn)[0] == '2')) ? T_ITALIC : 0)
-
 /* flags passed to eqn_box() */
 #define EQN_TSMASK	0x00ffff	/* style mask */
 #define EQN_TOP		0x010000	/* top-level boxes */
@@ -287,6 +285,12 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 				box_free(cols[i][j]);
 }
 
+static int italic(char *fn)
+{
+	return (!strcmp("I", fn) || !strcmp("2", fn) ||
+		gfont == fn || !strcmp(gfont, fn)) ? T_ITALIC : 0;
+}
+
 /* read a box without fractions */
 static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 {
@@ -365,7 +369,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		box_putf(box, "\\s%s", escarg(nreg(sz)));
 		do {
 			char *cfn = tok_font(tok_type(), fn);
-			box_puttext(box, tok_type() | FN2(cfn), "\\f%s%s",
+			box_puttext(box, tok_type() | italic(cfn), "\\f%s%s",
 					escarg(cfn), tok_improve(tok_get()));
 			tok_pop();
 		} while (!tok_sep(0));
