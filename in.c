@@ -75,7 +75,7 @@ int in_next(void)
 		if (!ein->prev)
 			return in_stdin();
 		if (ein->buf[ein->pos])
-			return ein->buf[ein->pos++];
+			return (unsigned char) ein->buf[ein->pos++];
 		in_pop();
 	}
 	return 0;

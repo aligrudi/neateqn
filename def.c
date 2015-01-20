@@ -66,7 +66,7 @@ char *def_macros[][2] = {
 	{"and",		"roman \"and\""},
 	{"approx",	"\"\\v'-.2m'\\z\\(ap\\v'.25m'\\(ap\\v'-.05m'\""},
 	{"arc",		"roman \"arc\""},
-	{"cdot",	"vcenter ."},
+	{"cdot",	"\\(c."},
 	{"cos",		"roman \"cos\""},
 	{"cosh",	"roman \"cosh\""},
 	{"coth",	"roman \"coth\""},
@@ -114,6 +114,7 @@ static char *binops[] = {
 	"∨", "\\(l|",
 	"∩", "\\(ca",
 	"∪", "\\(cu",
+	"⋅", "\\(c.",
 };
 
 /* list of relations */
