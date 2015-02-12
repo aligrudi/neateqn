@@ -80,7 +80,7 @@ char *def_macros[][2] = {
 	{"if",		"roman \"if\""},
 	{"inf",		"\\(if"},
 	{"infinity",	"\\(if"},
-	{"int",		"roman size +2 \\(in"},
+	{"int",		"roman size +2 \\(is"},
 	{"inter",	"roman size +2 \\(ca"},
 	{"lim",		"roman \"lim\""},
 	{"ln",		"roman \"ln\""},
