@@ -101,6 +101,18 @@ static int eqn_gaps(struct box *box, int cur)
 	return s ? S_S1 : 0;
 }
 
+/* the extra cost of line break between atoms a1 and a2 */
+static int def_cost(int a1, int a2)
+{
+	if (a1 == T_RELOP)
+		return 100;
+	if (a1 == T_BINOP)
+		return 200;
+	if (a1 == T_PUNC)
+		return 1000;
+	return 10000;
+}
+
 /* call just before inserting a non-italic character */
 static void box_italiccorrection(struct box *box)
 {
@@ -122,15 +134,18 @@ static int box_fixatom(int cur, int pre)
 /* call before inserting a token with box_put() and box_putf()  */
 static void box_beforeput(struct box *box, int type)
 {
-	int autogaps;
+	int autogaps;	/* automatically inserted space before this token */
+	int cost;	/* the extra cost of line break before this token */
 	if (box->atoms) {
 		autogaps = eqn_gaps(box, T_ATOM(type));
 		if (!(type & T_ITALIC))
 			box_italiccorrection(box);
 		if (autogaps && type != T_GAP && box->tcur != T_GAP) {
 			box_italiccorrection(box);
-			box_putf(box, "\\h'%du*%sp/100u'",
-					autogaps, nreg(box->szreg));
+			cost = def_cost(T_ATOM(box->tcur), T_ATOM(type));
+			/* enlarge a space to match autogaps */
+			box_putf(box, "\\s[\\En(.s*%du*%sp/100u/\\w' 'u]\\j'%d' \\s0",
+				autogaps, nreg(box->szreg), cost);
 		}
 	}
 	if (box->tomark) {
