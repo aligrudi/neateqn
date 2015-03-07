@@ -13,7 +13,6 @@
 
 /* flags passed to eqn_box() */
 #define EQN_TSMASK	0x00ffff	/* style mask */
-#define EQN_TOP		0x010000	/* top-level boxes */
 #define EQN_SUB		0x020000	/* this is a subscript */
 #define EQN_FROM	0x040000	/* this is a from block */
 
@@ -479,7 +478,7 @@ static struct box *eqn_read(int style)
 				escarg(EQNMK), nreg(eqn_lineupreg));
 			continue;
 		}
-		sub = eqn_box(style | EQN_TOP, box, szreg, NULL);
+		sub = eqn_box(style, box, szreg, NULL);
 		box_merge(box, sub, 1);
 		box_free(sub);
 	}
