@@ -35,7 +35,7 @@ static int eqn_boxuntil(struct box *box, int sz0, char *fn0, char *delim)
 		if (!strcmp("}", tok_get()))
 			return 1;
 		sub = eqn_box(box->style, sub ? box : NULL, sz0, fn0);
-		box_merge(box, sub);
+		box_merge(box, sub, 0);
 		box_free(sub);
 	}
 	return 0;
@@ -480,7 +480,7 @@ static struct box *eqn_read(int style)
 			continue;
 		}
 		sub = eqn_box(style | EQN_TOP, box, szreg, NULL);
-		box_merge(box, sub);
+		box_merge(box, sub, 1);
 		box_free(sub);
 	}
 	box_vertspace(box);

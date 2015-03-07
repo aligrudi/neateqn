@@ -139,7 +139,7 @@ void box_free(struct box *box);
 void box_puttext(struct box *box, int type, char *s, ...);
 void box_putf(struct box *box, char *s, ...);
 int box_size(struct box *box, char *val);
-void box_merge(struct box *box, struct box *sub);
+void box_merge(struct box *box, struct box *sub, int breakable);
 void box_sub(struct box *box, struct box *sub, struct box *sup);
 void box_from(struct box *box, struct box *lim, struct box *llim, struct box *ulim);
 void box_over(struct box *box, struct box *num, struct box *denom);
