@@ -8,8 +8,8 @@
 #define T_BIN(c1, c2)		(((c1) << 8) | (c2))
 #define T_SEP			"^~{}\"\n\t "
 #define T_SOFTSEP		(T_SEP "=:|.+-*/\\,()[]<>!")
-#define ESAVE		"\\R'" EQNFN "0 \\En(.f'\\R'" EQNSZ "0 \\En(.s'"
-#define ELOAD		"\\f[\\En[" EQNFN "0]]\\s[\\En[" EQNSZ "0]]"
+#define ESAVE		"\\E*[.eqnbeg]\\R'" EQNFN "0 \\En(.f'\\R'" EQNSZ "0 \\En(.s'"
+#define ELOAD		"\\f[\\En[" EQNFN "0]]\\s[\\En[" EQNSZ "0]]\\E*[.eqnend]"
 
 static char *kwds[] = {
 	"fwd", "down", "back", "up",
