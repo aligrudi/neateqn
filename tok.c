@@ -21,7 +21,7 @@ static char *kwds[] = {
 	"matrix", "col", "ccol", "lcol", "rcol",
 	"delim", "define",
 	"gfont", "grfont", "gbfont", "gsize", "set", "chartype",
-	"mark", "lineup", "bracketsizes", "bracketpieces",
+	"mark", "lineup", "bracketsizes", "bracketpieces", "breakcost",
 };
 
 static int tok_eqen;		/* non-zero if inside .EQ/.EN */

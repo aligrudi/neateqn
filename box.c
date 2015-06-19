@@ -101,18 +101,6 @@ static int eqn_gaps(struct box *box, int cur)
 	return s ? S_S1 : 0;
 }
 
-/* the extra cost of line break between atoms a1 and a2 */
-static int def_cost(int a1, int a2)
-{
-	if (a1 == T_RELOP)
-		return 100;
-	if (a1 == T_BINOP)
-		return 200;
-	if (a1 == T_PUNC)
-		return 1000;
-	return 10000;
-}
-
 /* call just before inserting a non-italic character */
 static void box_italiccorrection(struct box *box)
 {
@@ -144,7 +132,7 @@ static void box_beforeput(struct box *box, int type, int breakable)
 			if (breakable) {	/* enlarge a space to match autogaps */
 				box_putf(box, "\\s[\\En(.s*%du*%sp/100u/\\w' 'u]\\j'%d' \\s0",
 					autogaps, nreg(box->szreg),
-					def_cost(T_ATOM(box->tcur), T_ATOM(type)));
+					def_brcost(T_ATOM(box->tcur)));
 			} else {
 				box_putf(box, "\\h'%du*%sp/100u'",
 						autogaps, nreg(box->szreg));

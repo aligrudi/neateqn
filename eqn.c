@@ -132,6 +132,17 @@ static void eqn_chartype(void)
 		def_typeput(gl, typenum(type));
 }
 
+static void eqn_breakcost(void)
+{
+	char tok[NMLEN];
+	int cost, type;
+	snprintf(tok, sizeof(tok), "%s", tok_quotes(tok_poptext(1)));
+	cost = atoi(tok_poptext(1));
+	type = !strcmp("any", tok) ? 0 : typenum(tok);
+	if (type >= 0)
+		def_brcostput(type, cost);
+}
+
 static int eqn_commands(void)
 {
 	char var[LNLEN];
@@ -179,6 +190,10 @@ static int eqn_commands(void)
 	}
 	if (!tok_jmp("chartype")) {
 		eqn_chartype();
+		return 0;
+	}
+	if (!tok_jmp("breakcost")) {
+		eqn_breakcost();
 		return 0;
 	}
 	return 1;

@@ -415,3 +415,33 @@ int ts_denom(int style)
 	sz = MIN(2, TS_SZ(style) + 1);
 	return TS_MK(sz, 1);
 }
+
+/* extra line-break cost */
+static int brcost_type[32];
+static int brcost_cost[32];
+static int brcost_n;
+
+int def_brcost(int type)
+{
+	int i;
+	for (i = 0; i < brcost_n; i++)
+		if (brcost_type[i] == type && brcost_cost[i] > 0)
+			return brcost_cost[i];
+	return 10000;
+}
+
+void def_brcostput(int type, int cost)
+{
+	int i;
+	if (type == 0)
+		brcost_n = 0;
+	for (i = 0; i < brcost_n; i++)
+		if (brcost_type[i] == type)
+			break;
+	if (type <= 0 || i + (i >= brcost_n) >= LEN(brcost_type))
+		return;
+	brcost_type[i] = type;
+	brcost_cost[i] = cost;
+	if (i >= brcost_n)
+		brcost_n = i + 1;
+}

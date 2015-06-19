@@ -80,8 +80,10 @@ int def_type(char *s);
 void def_typeput(char *s, int type);
 void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
 void def_sizes(char *sign, char *sizes[]);
+int def_brcost(int type);
 void def_piecesput(char *sign, char *top, char *mid, char *bot, char *cen);
 void def_sizesput(char *sign, char *sizes[]);
+void def_brcostput(int type, int cost);
 extern char *def_macros[][2];
 
 /* variable length string buffer */
