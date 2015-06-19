@@ -203,8 +203,10 @@ int tok_eqn(void)
 	while ((c = in_next()) > 0) {
 		if (c == eqn_beg) {
 			*s = '\0';
+			printf(".eo\n");
 			printf(".%s %s \"%s\n",
 				tok_part ? "as" : "ds", EQNS, ln);
+			printf(".ec\n");
 			tok_part = 1;
 			tok_line = 1;
 			return 0;
