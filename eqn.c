@@ -402,10 +402,10 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			box_under(box);
 		} else if (!tok_jmp("vec")) {
 			printf(".ft %s\n", grfont);
-			box_accent(box, "\\s[\\n(.s/2]\\(->\\s0");
+			box_accent(box, "\\s[\\n(.s/2u]\\(->\\s0");
 		} else if (!tok_jmp("tilde")) {
 			printf(".ft %s\n", grfont);
-			box_accent(box, "\\s[\\n(.s*3/4]\\(ap\\s0");
+			box_accent(box, "\\s[\\n(.s*3u/4u]\\(ap\\s0");
 		} else if (!tok_jmp("hat")) {
 			printf(".ft %s\n", grfont);
 			box_accent(box, "ˆ");
