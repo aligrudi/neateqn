@@ -44,7 +44,7 @@ static int tok_req(int a, int b)
 	if (eqln[i - 1] != '.')
 		goto failed;
 	eqln[i++] = in_next();
-	while (eqln[i - 1] == ' ')
+	while (eqln[i - 1] == ' ' && i < sizeof(eqln) - 4)
 		eqln[i++] = in_next();
 	if (eqln[i - 1] != a)
 		goto failed;
@@ -196,40 +196,40 @@ static int tok_expand(void)
 /* read until .EQ or eqn_beg */
 int tok_eqn(void)
 {
-	char ln[LNLEN];
-	char *s = ln;
+	struct sbuf ln;
 	int c;
 	tok_cursep = 1;
+	sbuf_init(&ln);
 	while ((c = in_next()) > 0) {
 		if (c == eqn_beg) {
-			*s = '\0';
 			printf(".eo\n");
 			printf(".%s %s \"%s\n",
-				tok_part ? "as" : "ds", EQNS, ln);
+				tok_part ? "as" : "ds", EQNS, sbuf_buf(&ln));
+			sbuf_done(&ln);
 			printf(".ec\n");
 			tok_part = 1;
 			tok_line = 1;
 			return 0;
 		}
-		*s++ = c;
-		if (c == '\n') {
-			*s = '\0';
-			s = ln;
-		}
+		sbuf_add(&ln, c);
 		if (c == '\n' && !tok_part) {
-			printf("%s", ln);
-			tok_lf(ln);
-			if (tok_eq(ln) && !tok_en()) {
+			printf("%s", sbuf_buf(&ln));
+			tok_lf(sbuf_buf(&ln));
+			if (tok_eq(sbuf_buf(&ln)) && !tok_en()) {
 				tok_eqen = 1;
+				sbuf_done(&ln);
 				return 0;
 			}
 		}
 		if (c == '\n' && tok_part) {
 			printf(".lf %d\n", in_lineget());
-			printf("\\*%s%s", escarg(EQNS), ln);
+			printf("\\*%s%s", escarg(EQNS), sbuf_buf(&ln));
 			tok_part = 0;
 		}
+		if (c == '\n')
+			sbuf_cut(&ln, 0);
 	}
+	sbuf_done(&ln);
 	return 1;
 }
 
