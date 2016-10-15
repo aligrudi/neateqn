@@ -1,16 +1,17 @@
 NEATEQN
 =======
 
-Neateqn is an eqn preprocessor for neatroff.  It implements most of
-the extensions introduced by Groff's eqn preprocessor.  Neateqn,
-neatroff and neatpost are available at http://litcave.rudi.ir/.
+Neateqn is an eqn preprocessor for neatroff for typesetting
+mathematics.  It implements most of the extensions introduced by
+Groff's eqn preprocessor.  More information about neateqn and neatroff
+is available at http://litcave.rudi.ir/.
 
 For using Computer Modern font in neateqn for brackets and radicals,
-you first need to create troff font description files for neatroff
-using the mktrfn program (you shall need the Type 1 version of
-Computer Modern, which is available in most TeX distributions).  Then,
-you can add these lines in your troff source (assuming the default eqn
-roman font has not been changed with grfont command):
+neatroff font descriptions have to be generated using neatmkfn program
+(the Type 1 version of Computer Modern is available in most TeX
+distributions).  Then, the following lines activate the fonts in
+neatroff (assuming the default eqn roman font has not been changed
+with grfont command):
 
   .fp 11 cmsy10 cmsy10
   .fp 12 cmex10 cmex10
@@ -28,11 +29,11 @@ like those for summation and product:
 
 Neateqn uses TeX's text styles for inline equations, which make inline
 equations more compact.  However, it does not provide smallover, which
-is present in Groff's eqn.  A better solution, which would work for
-anything and not just fractions, would be using a macro like this:
+is available in Groff's eqn.  Instead, in neateqn one can define a
+macro like the following:
 
   .EQ
   define small @size -4@
   .EN
 
-which can be used as $tsum sub i=0 to n small {left ( pile {n above i} right )}$.
+Which can be used as $tsum sub i=0 sup n small {left ( pile {n above i} right )}$.
