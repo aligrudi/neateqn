@@ -285,6 +285,7 @@ static int char_type(char *s)
 static int tok_read(void)
 {
 	char *s = tok;
+	char *e = tok + sizeof(tok) - 2;
 	int c, c2;
 	int i;
 	*s = '\0';
@@ -337,7 +338,8 @@ static int tok_read(void)
 				*s++ = tok_next();
 			} else if (c == '[') {
 				while (c && c != ']') {
-					*s++ = c;
+					if (s < e)
+						*s++ = c;
 					c = tok_next();
 				}
 				*s++ = ']';
@@ -352,7 +354,8 @@ static int tok_read(void)
 					else
 						tok_back(c2);
 				}
-				*s++ = c;
+				if (s < e)
+					*s++ = c;
 				c = tok_next();
 			}
 			*s++ = '"';
@@ -382,7 +385,7 @@ static int tok_read(void)
 	}
 	*s++ = c;
 	i = utf8len(c);
-	while (--i > 0)
+	while (--i > 0 && s < e)
 		*s++ = tok_next();
 	*s = '\0';
 	tok_curtype = char_type(tok);
