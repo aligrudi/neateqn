@@ -1,21 +1,17 @@
 NEATEQN
 =======
 
-Neateqn is an eqn preprocessor for neatroff for typesetting
-mathematics.  It implements most of the extensions introduced by
-Groff's eqn preprocessor.  More information about neateqn and neatroff
-is available at http://litcave.rudi.ir/.
+Neateqn is an eqn Neatroff preprocessor for typesetting mathematics.
+It implements most of the extensions introduced by Groff's eqn
+preprocessor.  More information about Neateqn and Neatroff is
+available at http://litcave.rudi.ir/.
 
-For using Computer Modern font in neateqn for brackets and radicals,
-neatroff font descriptions have to be generated using neatmkfn program
-(the Type 1 version of Computer Modern is available in most TeX
-distributions).  Then, the following lines activate the fonts in
-neatroff (assuming the default eqn roman font has not been changed
-with grfont command):
+The following lines instruct Neateqn to use Computer Modern font for
+brackets and radicals:
 
-  .fp 11 cmsy10 cmsy10
-  .fp 12 cmex10 cmex10
-  .fspecial R cmsy10 cmex10
+  .fp 11 CMSY CMSY10
+  .fp 12 CMEX CMEX10
+  .fspecial R CMSY CMEX
 
 You can also redefine other symbols to use Computer Modern glyphs,
 like those for summation and product:
@@ -30,7 +26,7 @@ like those for summation and product:
 Neateqn uses TeX's text styles for inline equations, which make inline
 equations more compact.  However, it does not provide smallover, which
 is available in Groff's eqn.  Instead, in neateqn one can define a
-macro like the following:
+more general macro like the following:
 
   .EQ
   define small @size -4@
