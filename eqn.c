@@ -315,7 +315,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	char left[NMLEN] = "", right[NMLEN] = "";
 	char fn[FNLEN] = "";
 	int sz = sz0;
-	int subsz = nregmk();
+	int subsz;
 	int dx = 0, dy = 0;
 	int style = EQN_TSMASK & flg;
 	if (fn0)
@@ -323,8 +323,11 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	while (!eqn_commands())
 		;
 	box = box_alloc(sz, pre ? pre->tcur : 0, style);
-	while (!eqn_gaps(box, sz))
-		;
+	if (!eqn_gaps(box, sz)) {
+		while (!eqn_gaps(box, sz))
+			;
+		return box;
+	}
 	while (1) {
 		if (!tok_jmp("fat")) {
 		} else if (!tok_jmp("roman")) {
@@ -419,6 +422,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			break;
 		}
 	}
+	subsz = nregmk();
 	if (!tok_jmp("sub")) {
 		sizesub(subsz, sz0, ts_sup(style), style);
 		sub_sub = eqn_left(ts_sup(style) | EQN_SUB, NULL, subsz, fn0);
