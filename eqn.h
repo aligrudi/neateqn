@@ -1,3 +1,10 @@
+/*
+ * NEATEQN MAIN HEADER
+ *
+ * In Neateqn equations are recursively decomposed into boxes.  eqn.c
+ * reads the input and makes eqn boxes by calling appropriate functions
+ * from box.c.
+ */
 /* predefined array sizes */
 #define FNLEN		32	/* font name length */
 #define SZLEN		32	/* point size length */
