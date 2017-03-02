@@ -1,7 +1,7 @@
 CC = cc
 CFLAGS = -Wall -O2
 LDFLAGS =
-OBJS = eqn.o tok.o in.o def.o box.o reg.o sbuf.o
+OBJS = eqn.o tok.o src.o def.o box.o reg.o sbuf.o
 
 all: eqn
 %.o: %.c eqn.h

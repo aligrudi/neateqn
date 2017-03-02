@@ -522,7 +522,7 @@ int main(void)
 	char eqnblk[128];
 	int i;
 	for (i = 0; def_macros[i][0]; i++)
-		in_define(def_macros[i][0], def_macros[i][1]);
+		src_define(def_macros[i][0], def_macros[i][1]);
 	while (!tok_eqn()) {
 		reg_reset();
 		eqn_mk = 0;
@@ -538,11 +538,11 @@ int main(void)
 			printf(".ps \\n%s\n", escarg(EQNSZ));
 			printf(".ft \\n%s\n", escarg(EQNFN));
 		}
-		printf(".lf %d\n", in_lineget());
+		printf(".lf %d\n", src_lineget());
 		eqn_lineup[0] = '\0';
 		nregrm(eqn_lineupreg);
 		box_free(box);
 	}
-	in_done();
+	src_done();
 	return 0;
 }

@@ -57,17 +57,17 @@
 #define S_S2		e_mediumspace	/* medium space */
 #define S_S3		e_thickspace	/* thick space */
 
-/* reading input */
-int in_next(void);
-void in_back(int c);
-void in_define(char *name, char *def);
-int in_expand(char *name, char **args);
-int in_macrocall(char *name);
-int in_arg(int i);
-int in_top(void);
-int in_lineget(void);
-void in_lineset(int n);
-void in_done(void);
+/* reading the source */
+int src_next(void);
+void src_back(int c);
+void src_define(char *name, char *def);
+int src_expand(char *name, char **args);
+int src_macro(char *name);
+int src_arg(int i);
+int src_top(void);
+int src_lineget(void);
+void src_lineset(int n);
+void src_done(void);
 
 /* tokenizer */
 int tok_eqn(void);

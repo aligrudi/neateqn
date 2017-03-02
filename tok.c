@@ -40,21 +40,21 @@ static int tok_req(int a, int b)
 	int eqln[LNLEN];
 	int i = 0;
 	int ret = 0;
-	eqln[i++] = in_next();
+	eqln[i++] = src_next();
 	if (eqln[i - 1] != '.')
 		goto failed;
-	eqln[i++] = in_next();
+	eqln[i++] = src_next();
 	while (eqln[i - 1] == ' ' && i < sizeof(eqln) - 4)
-		eqln[i++] = in_next();
+		eqln[i++] = src_next();
 	if (eqln[i - 1] != a)
 		goto failed;
-	eqln[i++] = in_next();
+	eqln[i++] = src_next();
 	if (eqln[i - 1] != b)
 		goto failed;
 	ret = 1;
 failed:
 	while (i > 0)
-		in_back(eqln[--i]);
+		src_back(eqln[--i]);
 	return ret;
 }
 
@@ -86,7 +86,7 @@ static int tok_lf(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isdigit((unsigned char) *s))
-		in_lineset(atoi(s));
+		src_lineset(atoi(s));
 	return 1;
 }
 
@@ -96,10 +96,10 @@ static int tok_next(void)
 	int c;
 	if (!tok_eqen && !tok_line)
 		return 0;
-	c = in_next();
+	c = src_next();
 	if (tok_eqen && c == '\n' && tok_en())
 		tok_eqen = 0;
-	if (tok_line && (in_top() && c == eqn_end)) {
+	if (tok_line && (src_top() && c == eqn_end)) {
 		tok_line = 0;
 		return 0;
 	}
@@ -110,21 +110,21 @@ static int tok_next(void)
 static void tok_back(int c)
 {
 	if (tok_eqen || tok_line)
-		in_back(c);
+		src_back(c);
 }
 
 /* read the next word */
 static void tok_preview(char *s)
 {
-	int c = in_next();
+	int c = src_next();
 	int n = 0;
 	while (c > 0 && !strchr(T_SEP, c) &&
-			(!tok_line || (!in_top() || c != eqn_end))) {
+			(!tok_line || (!src_top() || c != eqn_end))) {
 		s[n++] = c;
-		c = in_next();
+		c = src_next();
 	}
 	s[n] = '\0';
-	in_back(c);
+	src_back(c);
 }
 
 /* push back the given word */
@@ -132,7 +132,7 @@ static void tok_unpreview(char *s)
 {
 	int n = strlen(s);
 	while (n > 0)
-		in_back((unsigned char) s[--n]);
+		src_back((unsigned char) s[--n]);
 }
 
 /* read a keyword; return zero on success */
@@ -150,7 +150,7 @@ static int tok_keyword(void)
 /* read the next argument of a macro call; return zero if read a ',' */
 static int tok_readarg(struct sbuf *sbuf)
 {
-	int c = in_next();
+	int c = src_next();
 	int pdepth = 0;		/* number of nested parenthesis */
 	while (c > 0 && (pdepth || (c != ',' && c != ')'))) {
 		sbuf_add(sbuf, c);
@@ -158,9 +158,26 @@ static int tok_readarg(struct sbuf *sbuf)
 			pdepth++;
 		if (c == '(')
 			pdepth--;
-		c = in_next();
+		c = src_next();
 	}
 	return c == ',' ? 0 : 1;
+}
+
+/* see if name starts with a macro name followed by a '(' */
+static int tok_macrocall(char *tok)
+{
+	char *parbeg = strchr(tok, '(');
+	char *name;
+	int len, ret;
+	if (!parbeg)
+		return 0;
+	len = parbeg - tok + 1;
+	name = malloc(len);
+	memcpy(name, tok, len - 1);
+	name[len] = '\0';
+	ret = src_macro(name);
+	free(name);
+	return ret;
 }
 
 /* expand a macro; return zero on success */
@@ -169,12 +186,11 @@ static int tok_expand(void)
 	char *args[10] = {NULL};
 	struct sbuf sbufs[10];
 	int i, n = 0;
-	int pbeg;
 	tok_preview(tok);
-	if (!in_expand(tok, NULL))
+	if (!src_expand(tok, NULL))
 		return 0;
-	pbeg = in_macrocall(tok);
-	if (pbeg) {
+	if (tok_macrocall(tok)) {
+		int pbeg = strchr(tok, '(') - tok;
 		tok_unpreview(tok + pbeg + 1);
 		tok[pbeg] = '\0';
 		while (n <= 9) {
@@ -184,7 +200,7 @@ static int tok_expand(void)
 		}
 		for (i = 0; i < n; i++)
 			args[i] = sbuf_buf(&sbufs[i]);
-		in_expand(tok, args);
+		src_expand(tok, args);
 		for (i = 0; i < n; i++)
 			sbuf_done(&sbufs[i]);
 		return 0;
@@ -200,7 +216,7 @@ int tok_eqn(void)
 	int c;
 	tok_cursep = 1;
 	sbuf_init(&ln);
-	while ((c = in_next()) > 0) {
+	while ((c = src_next()) > 0) {
 		if (c == eqn_beg) {
 			printf(".eo\n");
 			printf(".%s %s \"%s\n",
@@ -222,7 +238,7 @@ int tok_eqn(void)
 			}
 		}
 		if (c == '\n' && tok_part) {
-			printf(".lf %d\n", in_lineget());
+			printf(".lf %d\n", src_lineget());
 			printf("\\*%s%s", escarg(EQNS), sbuf_buf(&ln));
 			tok_part = 0;
 		}
@@ -238,7 +254,7 @@ void tok_eqnout(char *s)
 {
 	if (!tok_part) {
 		printf(".ds %s \"%s%s%s\n", EQNS, ESAVE, s, ELOAD);
-		printf(".lf %d\n", in_lineget() - 1);
+		printf(".lf %d\n", src_lineget() - 1);
 		printf("\\&\\*%s\n", escarg(EQNS));
 	} else {
 		printf(".as %s \"%s%s%s\n", EQNS, ESAVE, s, ELOAD);
@@ -312,8 +328,10 @@ static int tok_read(void)
 	if (tok_prevsep) {
 		if (c == '$') {
 			c2 = tok_next();
-			if (c2 >= '1' && c2 <= '9' && !in_arg(c2 - '0'))
+			if (c2 >= '1' && c2 <= '9' && !src_arg(c2 - '0')) {
+				tok_cursep = 1;
 				return tok_read();
+			}
 			tok_back(c2);
 		}
 		tok_back(c);
@@ -472,14 +490,14 @@ static void tok_macrodef(struct sbuf *def)
 {
 	int c;
 	int delim;
-	c = in_next();
+	c = src_next();
 	while (c > 0 && isspace(c))
-		c = in_next();
+		c = src_next();
 	delim = c;
-	c = in_next();
+	c = src_next();
 	while (c > 0 && c != delim) {
 		sbuf_add(def, c);
-		c = in_next();
+		c = src_next();
 	}
 }
 
@@ -491,7 +509,7 @@ void tok_macro(void)
 	tok_preview(name);
 	sbuf_init(&def);
 	tok_macrodef(&def);
-	in_define(name, sbuf_buf(&def));
+	src_define(name, sbuf_buf(&def));
 	sbuf_done(&def);
 }
 
