@@ -174,7 +174,7 @@ static char bracketsizes[32][NSIZES][BRLEN] = {
 	 "\\N'angbracketleftBig'", "\\N'angbracketleftbigg'", "\\N'angbracketleftBigg'"},
 	{"\\(ra", "\\(ra", "\\N'angbracketright'", "\\N'angbracketrightbig'",
 	 "\\N'angbracketrightBig'", "\\N'angbracketrightbigg'", "\\N'angbracketrightBigg'"},
-	{"|", "|", "\\(br", "\\(br", "\\(br"},
+	{"|", "|", "|", "|", "|"},
 	{"\\(sr", "\\(sr", "\\N'radical'", "\\N'radicalbig'", "\\N'radicalBig'",
 	 "\\N'radicalbigg'", "\\N'radicalBigg'"},
 };
@@ -191,7 +191,7 @@ static char bracketpieces[32][8][BRLEN] = {
 	{"\\(rc", "\\(rc", "\\(rx", "\\(rx"},
 	{"\\(lf", "\\(lx", "\\(lx", "\\(lf"},
 	{"\\(rf", "\\(rx", "\\(rx", "\\(rf"},
-	{"|", "\\(br", "\\(br", "\\(br"},
+	{"|", "|", "|", "|"},
 	{"\\(sr", "\\N'radicaltp'", "\\N'radicalvertex'", "\\N'radicalbt'"},
 };
 
