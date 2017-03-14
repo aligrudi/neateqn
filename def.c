@@ -445,3 +445,11 @@ void def_brcostput(int type, int cost)
 	if (i >= brcost_n)
 		brcost_n = i + 1;
 }
+
+/* at which characters equations are chopped */
+static char chopchars[256] = "^~{}\"\n\t ";
+
+int def_chopped(int c)
+{
+	return strchr(chopchars, c) != NULL;
+}

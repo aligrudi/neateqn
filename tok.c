@@ -6,8 +6,7 @@
 #include "eqn.h"
 
 #define T_BIN(c1, c2)		(((c1) << 8) | (c2))
-#define T_SEP			"^~{}\"\n\t "
-#define T_SOFTSEP		(T_SEP "=:|.+-*/\\,()[]<>!")
+#define T_SOFTSEP		("^~{}(),\"\n\t =:|.+-*/\\,()[]<>!")
 #define ESAVE		"\\E*[.eqnbeg]\\R'" EQNFN "0 \\En(.f'\\R'" EQNSZ "0 \\En(.s'"
 #define ELOAD		"\\f[\\En[" EQNFN "0]]\\s[\\En[" EQNSZ "0]]\\E*[.eqnend]"
 
@@ -118,8 +117,12 @@ static void tok_preview(char *s)
 {
 	int c = src_next();
 	int n = 0;
-	while (c > 0 && !strchr(T_SEP, c) &&
-			(!tok_line || (!src_top() || c != eqn_end))) {
+	if (c > 0 && def_chopped(c)) {
+		s[n++] = c;
+		s[n] = '\0';
+		return;
+	}
+	while (c > 0 && !def_chopped(c) && (!tok_line || (!src_top() || c != eqn_end))) {
 		s[n++] = c;
 		c = src_next();
 	}
@@ -152,32 +155,30 @@ static int tok_readarg(struct sbuf *sbuf)
 {
 	int c = src_next();
 	int pdepth = 0;		/* number of nested parenthesis */
-	while (c > 0 && (pdepth || (c != ',' && c != ')'))) {
+	int quotes = 0;		/* inside double quotes */
+	while (c > 0 && (pdepth || quotes || (c != ',' && c != ')'))) {
 		sbuf_add(sbuf, c);
-		if (c == ')')
+		if (!quotes && c == ')')
 			pdepth++;
-		if (c == '(')
+		if (!quotes && c == '(')
 			pdepth--;
+		if (c == '"')
+			quotes = 1 - quotes;
+		if (c == '\\') {
+			sbuf_add(sbuf, c = src_next());
+			if (c == '*' || c == 'n')
+				sbuf_add(sbuf, c = src_next());
+			if (c == '(') {
+				sbuf_add(sbuf, c = src_next());
+				sbuf_add(sbuf, c = src_next());
+			} else if (c == '[') {
+				while (c > 0 && c != ']')
+					sbuf_add(sbuf, c = src_next());
+			}
+		}
 		c = src_next();
 	}
 	return c == ',' ? 0 : 1;
-}
-
-/* see if name starts with a macro name followed by a '(' */
-static int tok_macrocall(char *tok)
-{
-	char *parbeg = strchr(tok, '(');
-	char *name;
-	int len, ret;
-	if (!parbeg)
-		return 0;
-	len = parbeg - tok + 1;
-	name = malloc(len);
-	memcpy(name, tok, len - 1);
-	name[len] = '\0';
-	ret = src_macro(name);
-	free(name);
-	return ret;
 }
 
 /* expand a macro; return zero on success */
@@ -187,16 +188,16 @@ static int tok_expand(void)
 	struct sbuf sbufs[10];
 	int i, n = 0;
 	tok_preview(tok);
-	if (!src_expand(tok, NULL))
-		return 0;
-	if (tok_macrocall(tok)) {
-		int pbeg = strchr(tok, '(') - tok;
-		tok_unpreview(tok + pbeg + 1);
-		tok[pbeg] = '\0';
-		while (n <= 9) {
-			sbuf_init(&sbufs[n]);
-			if (tok_readarg(&sbufs[n++]))
-				break;
+	if (src_macro(tok)) {
+		int c = src_next();
+		src_back(c);
+		if (c == '(') {		/* macro arguments follow */
+			src_next();
+			while (n <= 9) {
+				sbuf_init(&sbufs[n]);
+				if (tok_readarg(&sbufs[n++]))
+					break;
+			}
 		}
 		for (i = 0; i < n; i++)
 			args[i] = sbuf_buf(&sbufs[i]);
@@ -309,7 +310,9 @@ static int tok_read(void)
 	if (c <= 0)
 		return 1;
 	tok_prevsep = tok_cursep;
-	tok_cursep = !!strchr(T_SEP, c);
+	tok_cursep = def_chopped(c);
+	if (tok_cursep)
+		tok_prevsep = 1;
 	if (c == ' ' || c == '\n') {
 		while (c > 0 && (c == ' ' || c == '\n'))
 			c = tok_next();
@@ -422,11 +425,14 @@ int tok_type(void)
 	return tok[0] ? tok_curtype : 0;
 }
 
-/* return nonzero if current token is a separator */
-int tok_sep(int soft)
+/* return nonzero if current token is a chops the equation */
+int tok_chops(int soft)
 {
-	return !tok_get() || tok_curtype == T_KEYWORD ||
-		strchr(soft ? T_SOFTSEP : T_SEP, (unsigned char) tok_get()[0]);
+	if (!tok_get() || tok_curtype == T_KEYWORD)
+		return 1;
+	if (soft)
+		return strchr(T_SOFTSEP, (unsigned char) tok_get()[0]) != NULL ;
+	return def_chopped((unsigned char) tok_get()[0]);
 }
 
 /* read the next token, return the previous */
@@ -437,7 +443,7 @@ char *tok_pop(void)
 	return tok_prev[0] ? tok_prev : NULL;
 }
 
-/* like tok_pop() but ignore T_SPACE tokens; if sep, read until T_SEP */
+/* like tok_pop() but ignore T_SPACE tokens; if sep, read until chopped */
 char *tok_poptext(int sep)
 {
 	while (tok_type() == T_SPACE)
@@ -446,7 +452,7 @@ char *tok_poptext(int sep)
 	do {
 		strcat(tok_prev, tok);
 		tok_read();
-	} while (tok[0] && !tok_sep(!sep));
+	} while (tok[0] && !tok_chops(!sep));
 	return tok_prev[0] ? tok_prev : NULL;
 }
 

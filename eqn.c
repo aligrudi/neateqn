@@ -399,7 +399,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 			box_puttext(box, tok_type() | italic(cfn), "\\f%s%s",
 					escarg(cfn), tok_improve(tok_get()));
 			tok_pop();
-		} while (!tok_sep(0));
+		} while (!tok_chops(0));
 		if (dx || dy)
 			box_move(box, -dy, -dx);
 	}

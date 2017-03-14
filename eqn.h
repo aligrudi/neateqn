@@ -77,7 +77,7 @@ char *tok_pop(void);
 char *tok_poptext(int sep);
 int tok_jmp(char *kwd);
 int tok_type(void);
-int tok_sep(int soft);
+int tok_chops(int soft);
 void tok_delim(void);
 void tok_macro(void);
 int tok_inline(void);
@@ -85,6 +85,7 @@ int tok_inline(void);
 /* default definitions and operators */
 int def_type(char *s);
 void def_typeput(char *s, int type);
+int def_chopped(int c);
 void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
 void def_sizes(char *sign, char *sizes[]);
 int def_brcost(int type);
