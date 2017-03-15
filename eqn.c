@@ -516,6 +516,12 @@ static struct box *eqn_read(int style)
 	return box;
 }
 
+void errdie(char *msg)
+{
+	fprintf(stderr, msg);
+	exit(1);
+}
+
 int main(int argc, char **argv)
 {
 	struct box *box;

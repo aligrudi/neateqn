@@ -4,8 +4,9 @@
 #include <string.h>
 #include "eqn.h"
 
-#define NARGS		10
-#define NMACROS		512
+#define NARGS		10	/* number of arguments */
+#define NMACROS		512	/* number of macros */
+#define NSRCDEP		512	/* maximum esrc_depth */
 
 /* eqn input stream */
 struct esrc {
@@ -21,6 +22,7 @@ struct esrc {
 static struct esrc esrc_stdin;	/* the default input stream */
 static struct esrc *esrc = &esrc_stdin;
 static int lineno = 1;		/* current line number */
+static int esrc_depth;		/* the length of esrc chain */
 
 static char *src_strdup(char *s)
 {
@@ -32,8 +34,11 @@ static char *src_strdup(char *s)
 /* push buf in the input stream; this is a macro call if args is not NULL */
 static void src_push(char *buf, char **args)
 {
-	struct esrc *next = malloc(sizeof(*next));
+	struct esrc *next;
 	int i;
+	if (esrc_depth > NSRCDEP)
+		errdie("neateqn: macro recursion limit reached\n");
+	next = malloc(sizeof(*next));
 	memset(next, 0, sizeof(*next));
 	next->prev = esrc;
 	next->buf = src_strdup(buf);
@@ -42,6 +47,7 @@ static void src_push(char *buf, char **args)
 		for (i = 0; i < NARGS; i++)
 			next->args[i] = args[i] ? src_strdup(args[i]) : NULL;
 	esrc = next;
+	esrc_depth++;
 }
 
 /* back to the previous esrc buffer */
@@ -55,6 +61,7 @@ static void src_pop(void)
 		free(esrc->buf);
 		free(esrc);
 		esrc = prev;
+		esrc_depth--;
 	}
 }
 

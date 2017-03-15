@@ -57,6 +57,9 @@
 #define S_S2		e_mediumspace	/* medium space */
 #define S_S3		e_thickspace	/* thick space */
 
+/* small helper functions */
+void errdie(char *msg);
+
 /* reading the source */
 int src_next(void);
 void src_back(int c);
