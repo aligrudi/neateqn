@@ -86,6 +86,7 @@ int tok_inline(void);
 int def_type(char *s);
 void def_typeput(char *s, int type);
 int def_chopped(int c);
+void def_choppedset(char *s);
 void def_pieces(char *sign, char **top, char **mid, char **bot, char **cen);
 void def_sizes(char *sign, char *sizes[]);
 int def_brcost(int type);

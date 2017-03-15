@@ -447,9 +447,14 @@ void def_brcostput(int type, int cost)
 }
 
 /* at which characters equations are chopped */
-static char chopchars[256] = "^~{}\"\n\t ";
+static char chopped[256] = "^~\"\t";
 
 int def_chopped(int c)
 {
-	return strchr(chopchars, c) != NULL;
+	return strchr("\n {}", c) != NULL || strchr(chopped, c) != NULL;
+}
+
+void def_choppedset(char *c)
+{
+	strcpy(chopped, c);
 }

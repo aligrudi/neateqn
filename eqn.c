@@ -516,11 +516,23 @@ static struct box *eqn_read(int style)
 	return box;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	struct box *box;
 	char eqnblk[128];
 	int i;
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] != '-' || !argv[i][1])
+			break;
+		if (argv[i][1] == 'c') {
+			def_choppedset(argv[i][2] ? argv[i] + 2 : argv[++i]);
+		} else {
+			printf("Usage: neateqn [options] <input >output\n\n");
+			printf("Options:\n");
+			printf("  -c chars  \tcharacters that chop equations\n");
+			return 1;
+		}
+	}
 	for (i = 0; def_macros[i][0]; i++)
 		src_define(def_macros[i][0], def_macros[i][1]);
 	while (!tok_eqn()) {
