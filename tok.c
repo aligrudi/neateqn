@@ -265,19 +265,17 @@ void tok_eqnout(char *s)
 /* return the length of a utf-8 character based on its first byte */
 static int utf8len(int c)
 {
-	if (c > 0 && c <= 0x7f)
+	if (~c & 0x80)
+		return c > 0;
+	if (~c & 0x40)
 		return 1;
-	if (c >= 0xfc)
-		return 6;
-	if (c >= 0xf8)
-		return 5;
-	if (c >= 0xf0)
-		return 4;
-	if (c >= 0xe0)
-		return 3;
-	if (c >= 0xc0)
+	if (~c & 0x20)
 		return 2;
-	return c != 0;
+	if (~c & 0x10)
+		return 3;
+	if (~c & 0x08)
+		return 4;
+	return 1;
 }
 
 /* return the type of a token */
@@ -425,7 +423,7 @@ int tok_type(void)
 	return tok[0] ? tok_curtype : 0;
 }
 
-/* return nonzero if current token is a chops the equation */
+/* return nonzero if current token chops the equation */
 int tok_chops(int soft)
 {
 	if (!tok_get() || tok_curtype == T_KEYWORD)

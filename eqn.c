@@ -133,6 +133,7 @@ static int typenum(char *s)
 	return T_ORD;
 }
 
+/* read chartype command arguments and perform it */
 static void eqn_chartype(void)
 {
 	char gl[GNLEN], type[NMLEN];
@@ -142,6 +143,7 @@ static void eqn_chartype(void)
 		def_typeput(gl, typenum(type));
 }
 
+/* read breakcost command arguments and perform it */
 static void eqn_breakcost(void)
 {
 	char tok[NMLEN];
@@ -153,6 +155,7 @@ static void eqn_breakcost(void)
 		def_brcostput(type, cost);
 }
 
+/* read general eqn commands */
 static int eqn_commands(void)
 {
 	char var[LNLEN];
@@ -209,6 +212,7 @@ static int eqn_commands(void)
 	return 1;
 }
 
+/* read user-specified spaces */
 static int eqn_gaps(struct box *box, int szreg)
 {
 	if (!tok_jmp("~")) {
@@ -228,6 +232,7 @@ static int eqn_gaps(struct box *box, int szreg)
 	return 1;
 }
 
+/* return the font of the given token type */
 static char *tok_font(int tok, char *fn)
 {
 	if (fn && fn[0])
@@ -237,6 +242,7 @@ static char *tok_font(int tok, char *fn)
 	return grfont;
 }
 
+/* check the next token */
 static void tok_expect(char *s)
 {
 	if (tok_jmp(s)) {
@@ -246,6 +252,7 @@ static void tok_expect(char *s)
 	}
 }
 
+/* read pile command */
 static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 {
 	struct box *pile[NPILES] = {NULL};
@@ -265,6 +272,7 @@ static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 		box_free(pile[i]);
 }
 
+/* read matrix command */
 static void eqn_matrix(struct box *box, int sz0, char *fn0)
 {
 	struct box *cols[NPILES][NPILES] = {{NULL}};
@@ -309,6 +317,7 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 				box_free(cols[i][j]);
 }
 
+/* return nonzero if fn is italic */
 static int italic(char *fn)
 {
 	return (!strcmp("I", fn) || !strcmp("2", fn) ||
