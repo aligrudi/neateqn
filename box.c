@@ -40,7 +40,7 @@ void box_putf(struct box *box, char *s, ...)
 	char buf[LNLEN];
 	va_list ap;
 	va_start(ap, s);
-	vsprintf(buf, s, ap);
+	vsnprintf(buf, sizeof(buf), s, ap);
 	va_end(ap);
 	box_put(box, buf);
 }
@@ -161,7 +161,7 @@ void box_puttext(struct box *box, int type, char *s, ...)
 	char buf[LNLEN];
 	va_list ap;
 	va_start(ap, s);
-	vsprintf(buf, s, ap);
+	vsnprintf(buf, sizeof(buf), s, ap);
 	va_end(ap);
 	box_beforeput(box, type, 0);
 	if (!(box->tcur & T_ITALIC) && (type & T_ITALIC))
