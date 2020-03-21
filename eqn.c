@@ -405,10 +405,14 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		box_putf(box, "\\s%s", escarg(nreg(sz)));
 		do {
 			char *cfn = tok_font(tok_type(), fn);
+			int chops;
 			box_puttext(box, tok_type() | italic(cfn), "\\f%s%s",
 					escarg(cfn), tok_improve(tok_get()));
+			chops = tok_chops(0);
 			tok_pop();
-		} while (!tok_chops(0));
+			if (chops)		/* what we read was a splitting */
+				break;
+		} while (!tok_chops(0));	/* the next token is splitting */
 		if (dx || dy)
 			box_move(box, -dy, -dx);
 	}
@@ -497,6 +501,7 @@ static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0)
 	return box;
 }
 
+/* read an equation, either inline or block */
 static struct box *eqn_read(int style)
 {
 	struct box *box, *sub;
