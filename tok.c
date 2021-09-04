@@ -43,7 +43,7 @@ static int tok_req(int a, int b)
 	if (eqln[i - 1] != '.')
 		goto failed;
 	eqln[i++] = src_next();
-	while (eqln[i - 1] == ' ' && i < sizeof(eqln) - 4)
+	while (eqln[i - 1] == ' ' && i < LEN(eqln) - 1)
 		eqln[i++] = src_next();
 	if (eqln[i - 1] != a)
 		goto failed;
