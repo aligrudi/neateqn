@@ -297,7 +297,10 @@ void box_sub(struct box *box, struct box *sub, struct box *sup)
 	/* writing the subscript */
 	if (sub) {
 		/* subscript correction */
-		printf(".nr %s (%s+%s)*(%s-%s)/%s\n", nregname(sub_cor),
+		printf(".nr %s (%s-%s)\n", nregname(sub_cor),
+			nreg(box_wd), nreg(box_wdnoic));
+		printf(".if %s>0 .nr %s (%s+%s)*(%s-%s)/%s\n",
+			nreg(box_ht), nregname(sub_cor),
 			nreg(box_ht), nreg(sub_fall),
 			nreg(box_wd), nreg(box_wdnoic), nreg(box_ht));
 		printf(".nr %s -%s\n", nregname(sub_wd), nreg(sub_cor));

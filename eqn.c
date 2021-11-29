@@ -128,7 +128,7 @@ static int typenum(char *s)
 		return T_RIGHT;
 	if (!strcmp("punct", s) || !strcmp("punctuation", s))
 		return T_PUNC;
-	if (!strcmp("inner", s) || !strcmp("inner", s))
+	if (!strcmp("inner", s))
 		return T_INNER;
 	return T_ORD;
 }
