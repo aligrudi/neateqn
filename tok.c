@@ -112,22 +112,47 @@ static void tok_back(int c)
 		src_back(c);
 }
 
+static int readchar(char *dst)
+{
+	int c = src_next();
+	dst[0] = c;
+	if (c == '\\') {
+		c = src_next();
+		if (c == '(') {
+			dst[1] = c;
+			dst[2] = src_next();
+			dst[3] = src_next();
+			return 4;
+		}
+		if (c == '[') {
+			int n = 1;
+			while (c > 0 && c != ']') {
+				dst[n++] = c;
+				c = src_next();
+			}
+			return n;
+		}
+	}
+	return c > 0;
+}
+
 /* read the next word */
 static void tok_preview(char *s)
 {
 	int c = src_next();
 	int n = 0;
 	if (c > 0 && def_chopped(c)) {
-		s[n++] = c;
-		s[n] = '\0';
-		return;
-	}
-	while (c > 0 && !def_chopped(c) && (!tok_line || (!src_top() || c != eqn_end))) {
-		s[n++] = c;
-		c = src_next();
+		src_back(c);
+		n = readchar(s);
+	} else {
+		while (c > 0 && !def_chopped(c) && (!tok_line || (!src_top() || c != eqn_end))) {
+			src_back(c);
+			n += readchar(s + n);
+			c = src_next();
+		}
+		src_back(c);
 	}
 	s[n] = '\0';
-	src_back(c);
 }
 
 /* push back the given word */
@@ -429,7 +454,7 @@ int tok_chops(int soft)
 	if (!tok_get() || tok_curtype == T_KEYWORD)
 		return 1;
 	if (soft)
-		return strchr(T_SOFTSEP, (unsigned char) tok_get()[0]) != NULL ;
+		return strchr(T_SOFTSEP, (unsigned char) tok_get()[0]) != NULL;
 	return def_chopped((unsigned char) tok_get()[0]);
 }
 
