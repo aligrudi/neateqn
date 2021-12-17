@@ -118,20 +118,21 @@ static int readchar(char *dst)
 	dst[0] = c;
 	if (c == '\\') {
 		c = src_next();
+		dst[1] = c;
 		if (c == '(') {
-			dst[1] = c;
 			dst[2] = src_next();
 			dst[3] = src_next();
 			return 4;
 		}
 		if (c == '[') {
-			int n = 1;
+			int n = 2;
 			while (c > 0 && c != ']') {
-				dst[n++] = c;
 				c = src_next();
+				dst[n++] = c;
 			}
 			return n;
 		}
+		return 2;
 	}
 	return c > 0;
 }
