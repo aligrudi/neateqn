@@ -547,9 +547,9 @@ int main(int argc, char **argv)
 		if (argv[i][1] == 'c') {
 			def_choppedset(argv[i][2] ? argv[i] + 2 : argv[++i]);
 		} else {
-			printf("Usage: neateqn [options] <input >output\n\n");
-			printf("Options:\n");
-			printf("  -c chars  \tcharacters that chop equations\n");
+			fprintf(stderr, "Usage: neateqn [options] <input >output\n\n"
+					"Options:\n"
+					"  -c chars  \tcharacters that chop equations\n");
 			return 1;
 		}
 	}
