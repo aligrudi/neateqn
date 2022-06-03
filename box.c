@@ -979,6 +979,8 @@ static void box_colput(struct box **pile, int n, struct box *box,
 static void box_coldone(struct box **pile, int n, int plen[][4])
 {
 	int i;
+	/* not used */
+	(void) pile;
 	for (i = 0; i < n; i++)
 		blen_rm(plen[i]);
 }

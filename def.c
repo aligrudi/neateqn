@@ -203,7 +203,7 @@ static struct gtype {
 
 void def_typeput(char *s, int type)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < LEN(gtypes) && gtypes[i].g[0]; i++)
 		if (!strcmp(s, gtypes[i].g))
 			break;
@@ -225,7 +225,7 @@ static char *alookup(char **a, int len, char *s)
 
 int def_type(char *s)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < LEN(gtypes) && gtypes[i].g[0]; i++)
 		if (!strcmp(s, gtypes[i].g))
 			return gtypes[i].type;
@@ -244,7 +244,7 @@ int def_type(char *s)
 
 static int pieces_find(char *sign)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < LEN(bracketpieces); i++)
 		if (!strcmp(bracketpieces[i][0], sign))
 			return i;
@@ -277,7 +277,7 @@ void def_piecesput(char *sign, char *top, char *mid, char *bot, char *cen)
 
 static int sizes_find(char *sign)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < LEN(bracketsizes); i++)
 		if (!strcmp(bracketsizes[i][0], sign))
 			return i;
@@ -376,7 +376,7 @@ static struct gvar {
 
 void def_set(char *name, int val)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < LEN(gvars); i++)
 		if (!strcmp(gvars[i].name, name))
 			*gvars[i].ref = val;
@@ -438,7 +438,7 @@ void def_brcostput(int type, int cost)
 	for (i = 0; i < brcost_n; i++)
 		if (brcost_type[i] == type)
 			break;
-	if (type <= 0 || i + (i >= brcost_n) >= LEN(brcost_type))
+	if (type <= 0 || i + (i >= brcost_n) >= (int) LEN(brcost_type))
 		return;
 	brcost_type[i] = type;
 	brcost_cost[i] = cost;

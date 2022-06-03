@@ -37,13 +37,13 @@ static int eqn_beg, eqn_end;	/* inline eqn delimiters */
 static int tok_req(int a, int b)
 {
 	int eqln[LNLEN];
-	int i = 0;
+	size_t i = 0;
 	int ret = 0;
 	eqln[i++] = src_next();
 	if (eqln[i - 1] != '.')
 		goto failed;
 	eqln[i++] = src_next();
-	while (eqln[i - 1] == ' ' && i < sizeof(eqln) - 4)
+	while (eqln[i - 1] == ' ' && i < LEN(eqln) - 1)
 		eqln[i++] = src_next();
 	if (eqln[i - 1] != a)
 		goto failed;
@@ -167,7 +167,7 @@ static void tok_unpreview(char *s)
 /* read a keyword; return zero on success */
 static int tok_keyword(void)
 {
-	int i;
+	size_t i;
 	tok_preview(tok);
 	for (i = 0; i < LEN(kwds); i++)
 		if (!strcmp(kwds[i], tok))
