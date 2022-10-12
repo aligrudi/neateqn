@@ -137,8 +137,8 @@ static int readchar(char *dst)
 	return c > 0;
 }
 
-/* read the next word */
-static void tok_preview(char *s)
+/* read the next word; if opstop, stop at open parenthesis */
+static void tok_preview(char *s, int opstop)
 {
 	int c = src_next();
 	int n = 0;
@@ -146,7 +146,8 @@ static void tok_preview(char *s)
 		src_back(c);
 		n = readchar(s);
 	} else {
-		while (c > 0 && !def_chopped(c) && (!tok_line || (!src_top() || c != eqn_end))) {
+		while (c > 0 && (!def_chopped(c) && (!opstop || c != '(')) &&
+				(!tok_line || (!src_top() || c != eqn_end))) {
 			src_back(c);
 			n += readchar(s + n);
 			c = src_next();
@@ -168,7 +169,7 @@ static void tok_unpreview(char *s)
 static int tok_keyword(void)
 {
 	int i;
-	tok_preview(tok);
+	tok_preview(tok, 0);
 	for (i = 0; i < LEN(kwds); i++)
 		if (!strcmp(kwds[i], tok))
 			return 0;
@@ -213,7 +214,7 @@ static int tok_expand(void)
 	char *args[10] = {NULL};
 	struct sbuf sbufs[10];
 	int i, n = 0;
-	tok_preview(tok);
+	tok_preview(tok, 1);
 	if (src_macro(tok)) {
 		int c = src_next();
 		src_back(c);
@@ -505,7 +506,7 @@ int tok_jmp(char *s)
 void tok_delim(void)
 {
 	char delim[NMLEN];
-	tok_preview(delim);
+	tok_preview(delim, 0);
 	if (!strcmp("off", delim)) {
 		eqn_beg = 0;
 		eqn_end = 0;
@@ -536,7 +537,7 @@ void tok_macro(void)
 {
 	char name[NMLEN];
 	struct sbuf def;
-	tok_preview(name);
+	tok_preview(name, 0);
 	sbuf_init(&def);
 	tok_macrodef(&def);
 	src_define(name, sbuf_buf(&def));
