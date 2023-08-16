@@ -536,7 +536,7 @@ static struct box *eqn_read(int style)
 
 void errdie(char *msg)
 {
-	fprintf(stderr, msg);
+	fprintf(stderr, "%s", msg);
 	exit(1);
 }
 
