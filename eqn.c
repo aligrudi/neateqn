@@ -264,6 +264,8 @@ static void eqn_pile(struct box *box, int sz0, char *fn0, int adj)
 		tok_expect("{");
 	}
 	do {
+		if (!tok_get())
+			errdie("neateqn: unterminated pile\n");
 		pile[n++] = box_alloc(sz0, 0, box->style);
 	} while (!eqn_boxuntil(pile[n - 1], sz0, fn0, "above"));
 	tok_expect("}");
@@ -303,6 +305,8 @@ static void eqn_matrix(struct box *box, int sz0, char *fn0)
 			tok_expect("{");
 		}
 		do {
+			if (!tok_get())
+				errdie("neateqn: unterminated matrix col\n");
 			cols[ncols][nrows++] = box_alloc(sz0, 0, box->style);
 		} while (!eqn_boxuntil(cols[ncols][nrows - 1],
 				sz0, fn0, "above"));
