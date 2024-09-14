@@ -339,7 +339,7 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 	char fn[FNLEN] = "";
 	int sz = sz0;
 	int subsz;
-	int dx = 0, dy = 0;
+	int type, dx = 0, dy = 0;
 	int style = EQN_TSMASK & flg;
 	if (fn0)
 		strcpy(fn, fn0);
@@ -380,6 +380,13 @@ static struct box *eqn_left(int flg, struct box *pre, int sz0, char *fn0)
 		printf(".ft %s\n", grfont);
 		box_sqrt(box, sqrt);
 		box_free(sqrt);
+	} else if (!tok_jmp("type")) {
+		type = typenum(tok_poptext(1));
+		inner = eqn_left(flg, pre, sz, fn);
+		inner->tbeg = inner->tcur = type;
+		box_merge(box, inner, 1);
+		box_free(inner);
+		box->tcur = type;
 	} else if (!tok_jmp("pile") || !tok_jmp("cpile")) {
 		eqn_pile(box, sz, fn, 'c');
 	} else if (!tok_jmp("lpile")) {
