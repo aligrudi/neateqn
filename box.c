@@ -481,7 +481,7 @@ void box_over(struct box *box, struct box *num, struct box *den)
 	/* null delimiter space */
 	box_putf(box, "\\h'%sp*%du/100u'",nreg(box->szreg), e_nulldelim);
 	/* drawing the bar */
-	box_putf(box, "\\v'%su'\\f[\\n(.f]\\s[%s]\\l'%su'\\v'-%su'\\h'-%su/2u'",
+	box_putf(box, "\\v'%su'\\f[\\n(.f]\\s[%s]\\l'%su\\(ru'\\v'-%su'\\h'-%su/2u'",
 		nreg(bar_fall), nreg(box->szreg), nreg(all_wd),
 		nreg(bar_fall), nreg(all_wd));
 	/* output the numerator */
