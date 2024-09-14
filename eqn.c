@@ -34,6 +34,8 @@ static char eqn_lineup[128];	/* the lineup horizontal request */
 static int eqn_lineupreg;	/* the number register holding lineup width */
 static int eqn_mk;		/* the value of MK */
 
+FILE *e_fp;
+
 static struct box *eqn_box(int flg, struct box *pre, int sz0, char *fn0);
 
 /* read equations until delim is read */
@@ -540,25 +542,9 @@ void errdie(char *msg)
 	exit(1);
 }
 
-int main(int argc, char **argv)
-{
+void doeqn(void) {
 	struct box *box;
 	char eqnblk[128];
-	int i;
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] != '-' || !argv[i][1])
-			break;
-		if (argv[i][1] == 'c') {
-			def_choppedset(argv[i][2] ? argv[i] + 2 : argv[++i]);
-		} else {
-			fprintf(stderr, "Usage: neateqn [options] <input >output\n\n"
-					"Options:\n"
-					"  -c chars  \tcharacters that chop equations\n");
-			return 1;
-		}
-	}
-	for (i = 0; def_macros[i][0]; i++)
-		src_define(def_macros[i][0], def_macros[i][1]);
 	while (!tok_eqn()) {
 		reg_reset();
 		eqn_mk = 0;
@@ -579,6 +565,42 @@ int main(int argc, char **argv)
 		nregrm(eqn_lineupreg);
 		box_free(box);
 	}
+}
+
+int main(int argc, char **argv)
+{
+	int i;
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] != '-' || !argv[i][1])
+			break;
+		if (argv[i][1] == 'c') {
+			def_choppedset(argv[i][2] ? argv[i] + 2 : argv[++i]);
+		} else {
+			fprintf(stderr, "Usage: neateqn [options] <input >output\n\n"
+					"Options:\n"
+					"  -c chars  \tcharacters that chop equations\n");
+			return 1;
+		}
+	}
+	for (int j = 0; def_macros[j][0]; j++)
+		src_define(def_macros[j][0], def_macros[j][1]);
+
+	if (i == argc) {
+		e_fp = stdin;
+		doeqn();
+	} else {
+		for (; i < argc; i++) {
+			e_fp = fopen(argv[i], "r");
+			if (!e_fp) {
+				fprintf(stderr, "neateqn: %s:", *argv);
+				perror("");
+				return 1;
+			}
+
+			doeqn();
+		}
+	}
+
 	src_done();
 	return 0;
 }

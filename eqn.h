@@ -217,4 +217,5 @@ extern int e_columnsep;
 extern int e_baselinesep;
 extern int e_bodyheight;
 extern int e_bodydepth;
+extern FILE *e_fp;
 void def_set(char *name, int val);
