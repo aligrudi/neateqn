@@ -12,7 +12,7 @@
 
 static char *kwds[] = {
 	"fwd", "down", "back", "up",
-	"bold", "italic", "roman", "font", "fat", "size",
+	"bold", "italic", "roman", "font", "fat", "size", "type",
 	"bar", "dot", "dotdot", "dyad", "hat", "under", "vec", "tilde",
 	"sub", "sup", "from", "to", "vcenter",
 	"left", "right", "over", "sqrt",
