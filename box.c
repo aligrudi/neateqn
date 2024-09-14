@@ -60,7 +60,7 @@ int box_size(struct box *box, char *val)
 		box->szown = 1;
 		box->szreg = nregmk();
 	}
-	if (val[0] == '-' || val[0] == '+')
+	if (val[0] == '-' || val[0] == '+' || val[0] == '*' || val[0] == '/')
 		printf(".nr %s %s%s\n", nregname(box->szreg), nreg(szreg), val);
 	else
 		printf(".nr %s %s\n", nregname(box->szreg), val);
