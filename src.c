@@ -65,12 +65,24 @@ static void src_pop(void)
 	}
 }
 
+static int lastchar = 0;
+
 static int src_stdin(void)
 {
 	int c = fgetc(stdin);
 	if (c == '\n')
 		lineno++;
-	return c;
+
+        /* 
+            handle reading a file w/o a trailing NL
+            compute cost:  an additional libc call
+         */
+        if (c == EOF && lastchar != '\n') {
+            lastchar = '\n';
+            lineno++;
+        } else
+            lastchar = c;
+	return lastchar;
 }
 
 /* read the next character */
