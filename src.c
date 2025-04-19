@@ -67,7 +67,7 @@ static void src_pop(void)
 
 static int src_stdin(void)
 {
-	int c = fgetc(stdin);
+	int c = fgetc(e_fp);
 	if (c == '\n')
 		lineno++;
 	return c;
