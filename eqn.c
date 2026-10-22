@@ -1,7 +1,7 @@
 /*
  * NEATEQN NEATROFF PREPROCESSOR
  *
- * Copyright (C) 2014-2017 Ali Gholami Rudi <ali at rudi dot ir>
+ * Copyright (C) 2014-2024 Ali Gholami Rudi <ali at rudi dot ir> et al.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
